@@ -18,6 +18,8 @@ build/
 *.pt
 *.pth
 *.onnx
+idp_pipeline/model_store/*/
+idp_pipeline/model_store/registry.json
 
 # IDE
 .idea/
