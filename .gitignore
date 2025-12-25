@@ -45,3 +45,4 @@ logs/
 
 # Node (if any)
 node_modules/
+contracts/
