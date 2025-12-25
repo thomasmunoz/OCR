@@ -7,6 +7,8 @@ Automatically selects the best AI model based on:
 - Document type
 - Available VRAM
 - User preferences (speed vs quality)
+
+Includes automatic model downloading with progress bar.
 """
 
 import os
@@ -14,11 +16,16 @@ import sys
 import magic
 import hashlib
 from pathlib import Path
-from typing import Tuple, Optional, Dict, List
+from typing import Tuple, Optional, Dict, List, Callable
 from dataclasses import dataclass
 from enum import Enum
 import subprocess
 import re
+import logging
+
+# Initialize logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add parent path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -27,6 +34,14 @@ from config.models_config import (
     DocumentType, Language, OCRModel, OrganizationModel,
     MODEL_SELECTION_RULES, RECOMMENDED_CONFIG
 )
+
+# Import ModelManager for download handling
+try:
+    from model_store import ModelManager, get_model_manager
+    MODEL_MANAGER_AVAILABLE = True
+except ImportError:
+    MODEL_MANAGER_AVAILABLE = False
+    logger.warning("ModelManager not available - models must be pre-downloaded")
 
 # Models that have working engine implementations
 MODELS_WITH_ENGINES = {
@@ -363,6 +378,124 @@ class SmartModelRouter:
         commands.append(f"# Download Organization model: {selection.organization_model.name}")
         commands.append(f"huggingface-cli download {selection.organization_model.hf_repo}")
         return commands
+
+    def ensure_models_ready(
+        self,
+        selection: ModelSelection,
+        progress_callback: Optional[Callable[[int, int, str, str], None]] = None
+    ) -> bool:
+        """
+        Ensure selected models are downloaded and ready.
+        Downloads with progress bar if not present.
+
+        Args:
+            selection: ModelSelection from select_models()
+            progress_callback: Optional callback(current, total, model_name, status)
+                              status is "downloading", "ready", or "error"
+
+        Returns:
+            True if all models are ready, False otherwise
+        """
+        if not MODEL_MANAGER_AVAILABLE:
+            logger.warning("ModelManager not available. Assuming models are pre-downloaded.")
+            return True
+
+        manager = get_model_manager()
+
+        # Find OCR model key
+        ocr_key = None
+        for key, model in OCR_MODELS.items():
+            if model.hf_repo == selection.ocr_model.hf_repo:
+                ocr_key = key
+                break
+
+        # Find organization model key
+        org_key = None
+        for key, model in ORGANIZATION_MODELS.items():
+            if model.hf_repo == selection.organization_model.hf_repo:
+                org_key = key
+                break
+
+        success = True
+
+        # Check and download OCR model
+        if ocr_key:
+            if not manager.is_model_ready(ocr_key):
+                logger.info(f"OCR model {selection.ocr_model.name} not found. Downloading...")
+                if progress_callback:
+                    progress_callback(0, 0, selection.ocr_model.name, "downloading")
+
+                def ocr_progress(current, total, name):
+                    if progress_callback:
+                        progress_callback(current, total, name, "downloading")
+
+                if manager.download_model(ocr_key, ocr_progress):
+                    if progress_callback:
+                        progress_callback(100, 100, selection.ocr_model.name, "ready")
+                    logger.info(f"OCR model {selection.ocr_model.name} ready")
+                else:
+                    if progress_callback:
+                        progress_callback(0, 0, selection.ocr_model.name, "error")
+                    logger.error(f"Failed to download OCR model {selection.ocr_model.name}")
+                    success = False
+            else:
+                logger.info(f"OCR model {selection.ocr_model.name} already available")
+                if progress_callback:
+                    progress_callback(100, 100, selection.ocr_model.name, "ready")
+
+        # Check and download organization model
+        if org_key:
+            if not manager.is_model_ready(org_key):
+                logger.info(f"Organization model {selection.organization_model.name} not found. Downloading...")
+                if progress_callback:
+                    progress_callback(0, 0, selection.organization_model.name, "downloading")
+
+                def org_progress(current, total, name):
+                    if progress_callback:
+                        progress_callback(current, total, name, "downloading")
+
+                if manager.download_model(org_key, org_progress):
+                    if progress_callback:
+                        progress_callback(100, 100, selection.organization_model.name, "ready")
+                    logger.info(f"Organization model {selection.organization_model.name} ready")
+                else:
+                    if progress_callback:
+                        progress_callback(0, 0, selection.organization_model.name, "error")
+                    logger.error(f"Failed to download organization model {selection.organization_model.name}")
+                    success = False
+            else:
+                logger.info(f"Organization model {selection.organization_model.name} already available")
+                if progress_callback:
+                    progress_callback(100, 100, selection.organization_model.name, "ready")
+
+        return success
+
+    def get_model_paths(self, selection: ModelSelection) -> Dict[str, Optional[str]]:
+        """
+        Get local paths for selected models.
+
+        Returns:
+            Dict with 'ocr' and 'organization' paths (None if not downloaded)
+        """
+        if not MODEL_MANAGER_AVAILABLE:
+            return {"ocr": None, "organization": None}
+
+        manager = get_model_manager()
+        paths = {"ocr": None, "organization": None}
+
+        # Find OCR model key and path
+        for key, model in OCR_MODELS.items():
+            if model.hf_repo == selection.ocr_model.hf_repo:
+                paths["ocr"] = manager.get_model_path(key)
+                break
+
+        # Find organization model key and path
+        for key, model in ORGANIZATION_MODELS.items():
+            if model.hf_repo == selection.organization_model.hf_repo:
+                paths["organization"] = manager.get_model_path(key)
+                break
+
+        return paths
 
 
 def create_router(vram_gb: float = 16.0, priority: str = "balanced") -> SmartModelRouter:

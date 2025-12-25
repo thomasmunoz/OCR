@@ -157,8 +157,6 @@ async def upload_file(
 @app.get("/api/files/{job_id}")
 async def serve_file(job_id: str):
     """Serve the uploaded file for viewing inline in browser"""
-    from fastapi.responses import FileResponse
-
     job = pipeline.queue.get_job(job_id)
     if not job:
         raise HTTPException(404, "Job not found")

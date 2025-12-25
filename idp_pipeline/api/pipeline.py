@@ -147,9 +147,31 @@ class IDPPipeline:
 
             # Update job with model info
             self.queue.update_progress(
-                job.job_id, 0.1, "models_selected",
+                job.job_id, 0.08, "models_selected",
                 extra={"ocr_model": selection.ocr_model.name, "org_model": selection.organization_model.name}
             )
+
+            # STAGE 1.5: Ensure models are downloaded (with progress bar)
+            if progress_callback:
+                progress_callback(0.08, "Checking model availability...")
+
+            def download_progress(current, total, model_name, status):
+                if status == "downloading":
+                    if total > 0:
+                        pct = current / total * 100
+                        if progress_callback:
+                            progress_callback(0.08, f"Downloading {model_name}: {pct:.1f}%")
+                        self.queue.update_progress(
+                            job.job_id, 0.08,
+                            f"Downloading {model_name}: {pct:.1f}%"
+                        )
+                elif status == "ready":
+                    if progress_callback:
+                        progress_callback(0.09, f"{model_name} ready")
+
+            models_ready = self.router.ensure_models_ready(selection, download_progress)
+            if not models_ready:
+                raise RuntimeError("Failed to download required models")
 
             # STAGE 2: Load/switch models if needed
             if progress_callback:

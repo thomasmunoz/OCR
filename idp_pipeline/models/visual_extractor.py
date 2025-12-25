@@ -891,11 +891,10 @@ class VisualContentExtractor:
         Use AI vision model to analyze diagram structure.
 
         Returns structured data about the diagram or None if not a diagram.
-        """
-        # For now, return a placeholder - will integrate with actual vision model
-        # This would use Qwen2-VL or similar to analyze the image
 
-        # Placeholder: Would call self._vision_model.analyze_diagram(image_path)
+        TODO: Implement with actual vision model (Qwen2-VL)
+        """
+        # Not yet implemented - requires vision model integration
         return None
 
     def _build_diagram_from_analysis(self, analysis: Dict, page_num: int) -> Optional[DetectedDiagram]:
@@ -968,8 +967,10 @@ class VisualContentExtractor:
         Use AI vision model to analyze chart and extract data.
 
         Returns structured data about the chart or None if not a chart.
+
+        TODO: Implement with actual vision model (Qwen2-VL)
         """
-        # Placeholder - would integrate with vision model
+        # Not yet implemented - requires vision model integration
         return None
 
     def _build_chart_from_analysis(self, analysis: Dict, page_num: int) -> Optional[DetectedChart]:
