@@ -1,0 +1,85 @@
+#!/bin/bash
+# IDP Pipeline - Single Command Control
+# Usage: ./idp [start|stop|status|restart]
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$DIR"
+
+PORT=8080
+PID_FILE="$DIR/.idp.pid"
+
+start() {
+    if [ -f "$PID_FILE" ] && kill -0 $(cat "$PID_FILE") 2>/dev/null; then
+        echo "⚠️  Already running (PID: $(cat $PID_FILE))"
+        echo "   http://localhost:$PORT"
+        return
+    fi
+
+    echo "🚀 Starting IDP Pipeline..."
+    nohup python run.py serve --port $PORT > "$DIR/idp.log" 2>&1 &
+    echo $! > "$PID_FILE"
+    sleep 2
+
+    if kill -0 $(cat "$PID_FILE") 2>/dev/null; then
+        echo "✅ Running on http://localhost:$PORT"
+        echo "   PID: $(cat $PID_FILE)"
+        echo "   Logs: $DIR/idp.log"
+
+        # Auto-open browser on macOS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            open "http://localhost:$PORT"
+        fi
+    else
+        echo "❌ Failed to start. Check idp.log"
+        rm -f "$PID_FILE"
+    fi
+}
+
+stop() {
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if kill -0 $PID 2>/dev/null; then
+            echo "🛑 Stopping IDP Pipeline (PID: $PID)..."
+            kill $PID
+            sleep 1
+            kill -9 $PID 2>/dev/null
+            rm -f "$PID_FILE"
+            echo "✅ Stopped"
+        else
+            echo "⚠️  Process not running"
+            rm -f "$PID_FILE"
+        fi
+    else
+        # Fallback: kill by name
+        pkill -f "python run.py serve" 2>/dev/null
+        pkill -f "uvicorn.*server:app" 2>/dev/null
+        echo "✅ Stopped"
+    fi
+}
+
+status() {
+    if [ -f "$PID_FILE" ] && kill -0 $(cat "$PID_FILE") 2>/dev/null; then
+        echo "✅ Running"
+        echo "   PID: $(cat $PID_FILE)"
+        echo "   URL: http://localhost:$PORT"
+        echo "   Logs: $DIR/idp.log"
+    else
+        echo "⭕ Not running"
+    fi
+}
+
+case "${1:-start}" in
+    start)   start ;;
+    stop)    stop ;;
+    restart) stop; sleep 1; start ;;
+    status)  status ;;
+    *)
+        echo "IDP Pipeline Control"
+        echo "Usage: ./idp [start|stop|restart|status]"
+        echo ""
+        echo "  start   - Start the server (default)"
+        echo "  stop    - Stop the server"
+        echo "  restart - Restart the server"
+        echo "  status  - Check if running"
+        ;;
+esac

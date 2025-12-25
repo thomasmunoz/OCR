@@ -1,0 +1,129 @@
+# IDP Pipeline - Scalable Docker Compose
+# Usage:
+#   docker compose up -d                    # Start all services
+#   docker compose up -d --scale worker=3  # Start with 3 workers
+#   docker compose down                     # Stop all
+
+services:
+  # ==========================================
+  # Redis - Distributed Queue
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: idp-redis
+    restart: unless-stopped
+    # No external port - internal only (avoids conflicts)
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # API Server - Web UI & REST API
+  # ==========================================
+  api:
+    build:
+      context: .
+      target: production
+    container_name: idp-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - IDP_QUEUE_TYPE=redis
+      - IDP_REDIS_URL=redis://redis:6379/0
+      - IDP_UPLOAD_DIR=/data/uploads
+      - IDP_OUTPUT_DIR=/data/output
+      - IDP_MODELS_DIR=/data/models
+      - IDP_PORT=8080
+    volumes:
+      - uploads:/data/uploads
+      - output:/data/output
+      - /Users/tomahawk/DEV/models:/data/models  # Local filesystem for persistence
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ==========================================
+  # Worker - Scalable Processing (CPU)
+  # ==========================================
+  worker:
+    build:
+      context: .
+      target: worker
+    restart: unless-stopped
+    environment:
+      - IDP_QUEUE_TYPE=redis
+      - IDP_REDIS_URL=redis://redis:6379/0
+      - IDP_UPLOAD_DIR=/data/uploads
+      - IDP_OUTPUT_DIR=/data/output
+      - IDP_MODELS_DIR=/data/models
+      - IDP_WORKER_CONCURRENCY=1
+      - IDP_VRAM_GB=4.0  # Forces smaller models (TrOCR) for Docker memory limits
+      - HF_HOME=/data/models  # Use persistent volume for HuggingFace cache
+      - TRANSFORMERS_CACHE=/data/models  # Backup cache path
+    volumes:
+      - uploads:/data/uploads:ro
+      - output:/data/output
+      - /Users/tomahawk/DEV/models:/data/models  # Local filesystem for persistence
+    depends_on:
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    deploy:
+      replicas: 1
+      # Note: Removed memory limits - Qwen2-VL-2B needs ~12-16GB RAM when loading on CPU
+      # resources:
+      #   limits:
+      #     memory: 8G
+      #   reservations:
+      #     memory: 4G
+
+  # ==========================================
+  # Flower - Worker Monitoring (optional)
+  # ==========================================
+  monitor:
+    image: mher/flower:2.0
+    container_name: idp-monitor
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+    depends_on:
+      - redis
+    profiles:
+      - monitoring
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  redis_data:
+    driver: local
+  uploads:
+    driver: local
+  output:
+    driver: local
+  # models removed - using local filesystem at /Users/tomahawk/DEV/models
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  default:
+    name: idp-network

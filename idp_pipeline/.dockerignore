@@ -1,0 +1,34 @@
+# Docker ignore
+.git
+.gitignore
+*.md
+*.log
+*.pyc
+__pycache__
+.pytest_cache
+.mypy_cache
+.env
+.env.*
+*.egg-info
+dist
+build
+.vscode
+.idea
+
+# Data directories (mounted as volumes)
+uploads/*
+output/*
+*.db
+
+# Model weights/binaries (but keep Python source files)
+models/*.bin
+models/*.onnx
+models/*.pt
+models/*.pth
+models/*.safetensors
+models/cache/
+
+# Development
+tests/
+docs/
+*.ipynb

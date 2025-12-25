@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Lambda Deployment - Dual-AI OCR Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin: 10px 5px;
+            font-size: 0.9em;
+        }
+        
+        nav {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            border-bottom: 3px solid #667eea;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav a {
+            color: #667eea;
+            text-decoration: none;
+            margin-right: 25px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #764ba2;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        section {
+            margin-bottom: 60px;
+        }
+        
+        h2 {
+            font-size: 2.2em;
+            color: #667eea;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e9ecef;
+        }
+        
+        h3 {
+            font-size: 1.7em;
+            color: #764ba2;
+            margin: 30px 0 20px 0;
+        }
+        
+        h4 {
+            font-size: 1.3em;
+            color: #495057;
+            margin: 20px 0 15px 0;
+        }
+        
+        .mermaid {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 5px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .success-box {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 25px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e83e8c;
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .card h4 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        footer {
+            background: #282c34;
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .toc h3 {
+            margin-top: 0;
+        }
+        
+        .toc ul {
+            list-style: none;
+        }
+        
+        .toc li {
+            margin: 10px 0;
+        }
+        
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .toc a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 AWS Lambda Deployment</h1>
+            <p>Dual-AI OCR Extraction System</p>
+            <p style="font-size: 1.1em; margin-top: 15px;">Vision AI + Language AI = Perfect Data on AWS</p>
+            <div style="margin-top: 20px;">
+                <span class="badge">Serverless</span>
+                <span class="badge">Multi-Project</span>
+                <span class="badge">Auto-Scaling</span>
+                <span class="badge">Production Ready</span>
+            </div>
+        </header>
+        
+        <nav>
+            <a href="#overview">Overview</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#deployment">Deployment</a>
+            <a href="#usage">Usage</a>
+            <a href="#multi-project">Multi-Project</a>
+            <a href="#cost">Cost</a>
+        </nav>
+        
+        <div class="content">
+            <!-- Table of Contents -->
+            <div class="toc">
+                <h3>📋 Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">1. Overview & Status</a></li>
+                    <li><a href="#architecture">2. AWS Architecture</a></li>
+                    <li><a href="#components">3. AWS Components</a></li>
+                    <li><a href="#workflow">4. Processing Workflow</a></li>
+                    <li><a href="#deployment">5. Deployment Guide</a></li>
+                    <li><a href="#usage">6. Client SDK Usage</a></li>
+                    <li><a href="#multi-project">7. Multi-Project Organization</a></li>
+                    <li><a href="#cost">8. Cost Analysis</a></li>
+                    <li><a href="#security">9. Security & Best Practices</a></li>
+                    <li><a href="#troubleshooting">10. Troubleshooting</a></li>
+                </ul>
+            </div>
+            
+            <!-- SECTION 1: Overview -->
+            <section id="overview">
+                <h2>1. Overview & Status</h2>
+                
+                <div class="highlight-box">
+                    <h3 style="margin-top: 0; color: white;">✅ Deployment Complete</h3>
+                    <p><strong>Status:</strong> <span class="status-badge status-ready">PRODUCTION READY</span></p>
+                    <p style="font-size: 1.1em; margin-top: 15px;">
+                        Complete serverless OCR system deployed on AWS Lambda with support for 
+                        <strong>11 file formats</strong>, <strong>11 AI models</strong>, and 
+                        <strong>unlimited projects</strong>.
+                    </p>
+                </div>
+                
+                <h3>What Was Created</h3>
+                
+                <div class="grid">
+                    <div class="card">
+                        <h4>🐳 Lambda Container</h4>
+                        <p><strong>handler.py</strong> - Complete dual-AI processor</p>
+                        <p><strong>Dockerfile</strong> - Lambda container image</p>
+                        <p>10GB memory, 15min timeout, CPU-optimized</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>🏗️ Infrastructure</h4>
+                        <p><strong>main.tf</strong> - Complete Terraform IaC</p>
+                        <p>Lambda, API Gateway, S3, DynamoDB, IAM</p>
+                        <p>Production-ready, auto-scaling</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>📦 Client SDK</h4>
+                        <p><strong>ocr_client.py</strong> - Python library</p>
+                        <p>Easy integration for any project</p>
+                        <p>S3 upload, batch processing, health checks</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>📚 Documentation</h4>
+                        <p><strong>README.md</strong> - Complete guide</p>
+                        <p><strong>examples/</strong> - 8 usage patterns</p>
+                        <p><strong>deploy.sh</strong> - One-command deployment</p>
+                    </div>
+                </div>
+                
+                <h3>Key Features</h3>
+                
+                <ul>
+                    <li>✅ <strong>Serverless</strong> - No servers to manage, auto-scaling</li>
+                    <li>✅ <strong>11 File Formats</strong> - PDF, images, DOCX, XLSX, and more</li>
+                    <li>✅ <strong>11 AI Models</strong> - Flexible OCR and organization models</li>
+                    <li>✅ <strong>Multi-Project</strong> - Serve unlimited teams/applications</li>
+                    <li>✅ <strong>Cost-Effective</strong> - Pay only for what you use (~$54/month for 1000 docs)</li>
+                    <li>✅ <strong>Production-Ready</strong> - Monitoring, logging, error handling</li>
+                    <li>✅ <strong>One-Command Deploy</strong> - ./deploy.sh and you're live</li>
+                </ul>
+            </section>
+            
+            <!-- SECTION 2: Architecture -->
+            <section id="architecture">
+                <h2>2. AWS Architecture</h2>
+                
+                <h3>Complete System Architecture</h3>
+                
+                <div class="mermaid">
+graph TB
+    subgraph Client["👥 CLIENT APPLICATIONS"]
+        ProjectA[Project A<br/>Accounting]
+        ProjectB[Project B<br/>Legal]
+        ProjectC[Project C<br/>HR]
+    end
+    
+    subgraph API["🌐 API GATEWAY"]
+        HTTPSEndpoint[HTTPS REST API<br/>POST /process<br/>GET /health]
+    end
+    
+    subgraph Lambda["⚡ AWS LAMBDA"]
+        Container[Container Image<br/>10GB Memory | 15min Timeout]
+        
+        subgraph Pipeline["Dual-AI Pipeline"]
+            Stage1[Stage 1: Vision AI OCR<br/>Qwen2-VL / GPT-4V / Claude]
+            Stage2[Stage 2: Language AI Org<br/>Qwen 32B / GPT-4 / Claude]
+        end
+    end
+    
+    subgraph Storage["💾 STORAGE & TRACKING"]
+        S3Docs[S3: Documents Bucket<br/>project-*/uploads/]
+        S3Results[S3: Results Bucket<br/>project-*/results/]
+        DynamoDB[DynamoDB: Jobs Table<br/>Job Tracking]
+        CloudWatch[CloudWatch Logs<br/>Monitoring & Metrics]
+    end
+    
+    ProjectA -->|HTTPS| HTTPSEndpoint
+    ProjectB -->|HTTPS| HTTPSEndpoint
+    ProjectC -->|HTTPS| HTTPSEndpoint
+    
+    HTTPSEndpoint -->|Invoke| Container
+    Container -->|Process| Stage1
+    Stage1 -->|Raw Text| Stage2
+    Stage2 -->|Structured JSON| Container
+    
+    Container -->|Download| S3Docs
+    Container -->|Upload Results| S3Results
+    Container -->|Update Status| DynamoDB
+    Container -->|Write Logs| CloudWatch
+                </div>
+                
+                <h3>Two-Stage Processing Pipeline</h3>
+                
+                <div class="mermaid">
+sequenceDiagram
+    participant Client
+    participant API as API Gateway
+    participant Lambda
+    participant S3
+    participant DynamoDB
+    
+    Client->>API: POST /process<br/>{file, projectId, models}
+    API->>Lambda: Invoke Handler
+    
+    activate Lambda
+    Lambda->>DynamoDB: Create Job Record<br/>(status: processing)
+    
+    alt File from S3
+        Lambda->>S3: Download Document
+        S3-->>Lambda: Document Content
+    else Base64
+        Client->>Lambda: Document as base64
+    end
+    
+    Lambda->>Lambda: Stage 1: Vision AI OCR<br/>Extract Raw Text
+    Lambda->>Lambda: Stage 2: Language AI<br/>Organize + Structure
+    
+    Lambda->>S3: Upload Result JSON
+    Lambda->>DynamoDB: Update Job<br/>(status: completed)
+    Lambda-->>API: Return Result
+    deactivate Lambda
+    
+    API-->>Client: JSON Response<br/>{success, data}
+                </div>
+            </section>
+            
+            <!-- SECTION 3: Components -->
+            <section id="components">
+                <h2>3. AWS Components</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Purpose</th>
+                            <th>Configuration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Lambda Function</strong></td>
+                            <td>Runs dual-AI OCR processing</td>
+                            <td>
+                                • 10GB memory<br/>
+                                • 15min timeout<br/>
+                                • Container image<br/>
+                                • CPU-only
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>API Gateway</strong></td>
+                            <td>REST API endpoint</td>
+                            <td>
+                                • HTTP API<br/>
+                                • CORS enabled<br/>
+                                • POST /process<br/>
+                                • GET /health
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>S3 Buckets (2)</strong></td>
+                            <td>Document storage & results</td>
+                            <td>
+                                • documents-bucket<br/>
+                                • results-bucket<br/>
+                                • Versioning enabled<br/>
+                                • Encrypted at rest
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>DynamoDB Table</strong></td>
+                            <td>Job tracking & status</td>
+                            <td>
+                                • PK: jobId<br/>
+                                • SK: projectId<br/>
+                                • GSI: status/createdAt<br/>
+                                • TTL enabled
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>ECR Repository</strong></td>
+                            <td>Docker image storage</td>
+                            <td>
+                                • Scan on push<br/>
+                                • Lifecycle policies<br/>
+                                • Image versioning
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>CloudWatch</strong></td>
+                            <td>Monitoring & logging</td>
+                            <td>
+                                • Lambda logs<br/>
+                                • API Gateway logs<br/>
+                                • 30-day retention
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>IAM Roles</strong></td>
+                            <td>Security & permissions</td>
+                            <td>
+                                • Lambda execution role<br/>
+                                • Least privilege<br/>
+                                • S3/DynamoDB access
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Multi-Project Organization</h3>
+                
+                <div class="mermaid">
+graph LR
+    subgraph S3["S3 Bucket Structure"]
+        Root[dual-ai-ocr-documents-prod/]
+        
+        ProjectA[project-a/]
+        ProjectB[project-b/]
+        ProjectC[project-c/]
+        
+        UploadA[uploads/]
+        ResultA[results/]
+        
+        UploadB[uploads/]
+        ResultB[results/]
+        
+        UploadC[uploads/]
+        ResultC[results/]
+    end
+    
+    Root --> ProjectA
+    Root --> ProjectB
+    Root --> ProjectC
+    
+    ProjectA --> UploadA
+    ProjectA --> ResultA
+    
+    ProjectB --> UploadB
+    ProjectB --> ResultB
+    
+    ProjectC --> UploadC
+    ProjectC --> ResultC
+                </div>
+            </section>
+            
+            <!-- SECTION 4: Workflow -->
+            <section id="workflow">
+                <h2>4. Processing Workflow</h2>
+                
+                <h3>Document Processing Flow</h3>
+                
+                <div class="mermaid">
+flowchart TD
+    Start([Client Uploads Document])
+    
+    Start --> Upload{Upload Method?}
+    
+    Upload -->|S3| S3Upload[Upload to S3<br/>project-*/uploads/]
+    Upload -->|Base64| DirectSend[Send as base64]
+    
+    S3Upload --> API[API Gateway<br/>POST /process]
+    DirectSend --> API
+    
+    API --> Lambda[Lambda Invoked]
+    
+    Lambda --> CreateJob[Create Job Record<br/>DynamoDB]
+    CreateJob --> Download{Source?}
+    
+    Download -->|S3| GetS3[Download from S3]
+    Download -->|Base64| Decode[Decode base64]
+    
+    GetS3 --> OCR[Stage 1: Vision AI OCR<br/>Extract Text]
+    Decode --> OCR
+    
+    OCR --> RawText[Raw Unstructured Text]
+    RawText --> Org[Stage 2: Language AI<br/>Organize & Structure]
+    
+    Org --> JSON[Perfect Structured JSON]
+    JSON --> SaveResult[Save Result to S3<br/>project-*/results/]
+    
+    SaveResult --> UpdateJob[Update Job Status<br/>completed]
+    UpdateJob --> Response[Return JSON Response]
+    
+    Response --> End([Client Receives Data])
+                </div>
+                
+                <h3>Error Handling Flow</h3>
+                
+                <div class="mermaid">
+flowchart TD
+    Process[Processing Document]
+    
+    Process --> Check{Success?}
+    
+    Check -->|Yes| Success[Update Job:<br/>status = completed]
+    Check -->|No| Error[Catch Exception]
+    
+    Error --> LogError[Log to CloudWatch]
+    LogError --> UpdateFailed[Update Job:<br/>status = failed]
+    UpdateFailed --> Return500[Return 500 Error]
+    
+    Success --> Return200[Return 200 OK]
+    
+    Return200 --> ClientOK[Client: Process Result]
+    Return500 --> ClientError[Client: Handle Error]
+                </div>
+            </section>
+            
+            <!-- SECTION 5: Deployment -->
+            <section id="deployment">
+                <h2>5. Deployment Guide</h2>
+                
+                <h3>Prerequisites</h3>
+                
+                <div class="info-box">
+                    <strong>Required Tools:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>AWS Account with appropriate permissions</li>
+                        <li>AWS CLI configured (<code>aws configure</code>)</li>
+                        <li>Docker Desktop installed and running</li>
+                        <li>Terraform ≥ 1.0 installed</li>
+                        <li>Python 3.11+ installed</li>
+                    </ul>
+                </div>
+                
+                <h3>One-Command Deployment</h3>
+                
+                <pre><code>cd aws-lambda-ocr
+./deploy.sh</code></pre>
+                
+                <div class="success-box">
+                    <strong>Deployment Time:</strong> ~10 minutes<br/>
+                    <strong>Result:</strong> Fully operational AWS Lambda OCR service
+                </div>
+                
+                <h3>Deployment Steps (Automatic)</h3>
+                
+                <div class="mermaid">
+flowchart LR
+    Build[1. Build Docker Image<br/>docker build]
+    Push[2. Push to ECR<br/>docker push]
+    Init[3. Terraform Init<br/>terraform init]
+    Plan[4. Terraform Plan<br/>terraform plan]
+    Apply[5. Terraform Apply<br/>terraform apply]
+    Complete[6. Output API Endpoint<br/>✅ Ready!]
+    
+    Build --> Push
+    Push --> Init
+    Init --> Plan
+    Plan --> Apply
+    Apply --> Complete
+                </div>
+                
+                <h3>Manual Deployment Steps</h3>
+                
+                <h4>Step 1: Build Docker Image</h4>
+                <pre><code>cd aws-lambda-ocr/lambda
+docker build -t dual-ai-ocr:latest .</code></pre>
+                
+                <h4>Step 2: Create ECR Repository</h4>
+                <pre><code>aws ecr create-repository \
+    --repository-name dual-ai-ocr-lambda \
+    --region us-east-1</code></pre>
+                
+                <h4>Step 3: Login to ECR</h4>
+                <pre><code>aws ecr get-login-password --region us-east-1 | \
+    docker login --username AWS --password-stdin \
+    ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com</code></pre>
+                
+                <h4>Step 4: Push Image</h4>
+                <pre><code>docker tag dual-ai-ocr:latest \
+    ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/dual-ai-ocr-lambda:latest
+    
+docker push \
+    ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/dual-ai-ocr-lambda:latest</code></pre>
+                
+                <h4>Step 5: Deploy with Terraform</h4>
+                <pre><code>cd ../infrastructure
+terraform init
+terraform plan -var="aws_region=us-east-1"
+terraform apply -var="aws_region=us-east-1" -auto-approve</code></pre>
+                
+                <h4>Step 6: Get API Endpoint</h4>
+                <pre><code>terraform output api_endpoint
+# Output: https://abc123.execute-api.us-east-1.amazonaws.com</code></pre>
+                
+                <h3>Verify Deployment</h3>
+                
+                <pre><code># Health check
+curl https://YOUR_API_ENDPOINT/health
+
+# Expected response:
+# {
+#   "status": "healthy",
+#   "version": "1.0.0",
+#   "models": {
+#     "ocr": ["qwen2-vl-2b-ocr", ...],
+#     "organization": ["qwen-32b", ...]
+#   }
+# }</code></pre>
+            </section>
+            
+            <!-- SECTION 6: Usage -->
+            <section id="usage">
+                <h2>6. Client SDK Usage</h2>
+                
+                <h3>Installation</h3>
+                
+                <pre><code># Copy SDK to your project
+cp aws-lambda-ocr/client-sdk/ocr_client.py your_project/
+
+# Install dependencies
+pip install requests boto3</code></pre>
+                
+                <h3>Basic Usage</h3>
+                
+                <pre><code>from ocr_client import OCRClient, OCRConfig
+
+# Initialize client
+client = OCRClient(
+    api_endpoint="https://abc123.execute-api.us-east-1.amazonaws.com",
+    project_id="my-project",
+    s3_bucket="dual-ai-ocr-documents-prod"
+)
+
+# Process document
+result = client.process_document(
+    "invoice.pdf",
+    config=OCRConfig(extract_company=True),
+    use_s3=True
+)
+
+# Access data
+print(result['data']['data'])
+# {
+#   "company": {"name": "...", "siren": "..."},
+#   "financial": {"total_amount": "..."},
+#   ...
+# }</code></pre>
+                
+                <h3>Quick One-Liner</h3>
+                
+                <pre><code>from ocr_client import quick_extract
+
+result = quick_extract(
+    "document.pdf",
+    api_endpoint="https://abc123.execute-api.us-east-1.amazonaws.com",
+    project_id="my-app"
+)</code></pre>
+                
+                <h3>Batch Processing</h3>
+                
+                <pre><code>from ocr_client import batch_extract
+
+results = batch_extract(
+    ["invoice1.pdf", "invoice2.pdf", "invoice3.pdf"],
+    api_endpoint="https://abc123.execute-api.us-east-1.amazonaws.com",
+    project_id="accounting"
+)
+
+for result in results:
+    if result['success']:
+        print(f"✅ {result['data']['data']}")
+    else:
+        print(f"❌ Error: {result['error']}")</code></pre>
+                
+                <h3>Using Different Models</h3>
+                
+                <pre><code># Use GPT-4 for organization
+config = OCRConfig(
+    ocr_model="qwen2-vl-2b-ocr",
+    org_model="gpt-4",
+    api_keys={"openai": "sk-proj-xxx..."}
+)
+
+result = client.process_document("complex_doc.pdf", config)
+
+# Use Claude Sonnet (cost-effective)
+config = OCRConfig(
+    ocr_model="qwen2-vl-2b-ocr",
+    org_model="claude-sonnet",
+    api_keys={"anthropic": "sk-ant-xxx..."}
+)
+
+result = client.process_document("document.pdf", config)</code></pre>
+            </section>
+            
+            <!-- SECTION 7: Multi-Project -->
+            <section id="multi-project">
+                <h2>7. Multi-Project Organization</h2>
+                
+                <h3>Scenario: 3 Teams, 1 Lambda Function</h3>
+                
+                <div class="grid">
+                    <div class="card">
+                        <h4>Team A - Accounting</h4>
+                        <pre style="font-size: 0.8em;"><code>client_a = OCRClient(
+  api_endpoint=API,
+  project_id="accounting",
+  s3_bucket=BUCKET
+)
+
+result = client_a.process_document(
+  "invoice.pdf",
+  config=OCRConfig(
+    extract_company=True
+  )
+)</code></pre>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>Team B - Legal</h4>
+                        <pre style="font-size: 0.8em;"><code>client_b = OCRClient(
+  api_endpoint=API,
+  project_id="legal",
+  s3_bucket=BUCKET
+)
+
+result = client_b.process_document(
+  "contract.pdf",
+  config=OCRConfig(
+    org_model="gpt-4"
+  )
+)</code></pre>
+                    </div>
+                    
+                    <div class="card">
+                        <h4>Team C - HR</h4>
+                        <pre style="font-size: 0.8em;"><code>client_c = OCRClient(
+  api_endpoint=API,
+  project_id="hr",
+  s3_bucket=BUCKET
+)
+
+result = client_c.process_document(
+  "resume.pdf"
+)</code></pre>
+                    </div>
+                </div>
+                
+                <h3>Benefits</h3>
+                
+                <ul>
+                    <li>✅ <strong>Single Lambda Function</strong> - One deployment serves all teams</li>
+                    <li>✅ <strong>Isolated Data</strong> - Separate S3 folders per project</li>
+                    <li>✅ <strong>Independent Tracking</strong> - DynamoDB partitioned by projectId</li>
+                    <li>✅ <strong>Cost Sharing</strong> - Infrastructure costs split across teams</li>
+                    <li>✅ <strong>Centralized Monitoring</strong> - One CloudWatch dashboard</li>
+                    <li>✅ <strong>Flexible Models</strong> - Each project chooses AI models</li>
+                </ul>
+                
+                <h3>Project Organization in DynamoDB</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>jobId</th>
+                            <th>projectId</th>
+                            <th>status</th>
+                            <th>ocrModel</th>
+                            <th>orgModel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>job-001</td>
+                            <td>accounting</td>
+                            <td>completed</td>
+                            <td>qwen2-vl-2b-ocr</td>
+                            <td>qwen-32b</td>
+                        </tr>
+                        <tr>
+                            <td>job-002</td>
+                            <td>legal</td>
+                            <td>completed</td>
+                            <td>qwen2-vl-2b-ocr</td>
+                            <td>gpt-4</td>
+                        </tr>
+                        <tr>
+                            <td>job-003</td>
+                            <td>hr</td>
+                            <td>processing</td>
+                            <td>qwen2-vl-2b-ocr</td>
+                            <td>qwen-14b</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <!-- SECTION 8: Cost -->
+            <section id="cost">
+                <h2>8. Cost Analysis</h2>
+                
+                <h3>Monthly Cost Breakdown (1000 documents)</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Usage</th>
+                            <th>Monthly Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Lambda</td>
+                            <td>1000 invocations × 30s × 10GB</td>
+                            <td><strong>~$50</strong></td>
+                        </tr>
+                        <tr>
+                            <td>S3</td>
+                            <td>1000 docs × 2MB + results</td>
+                            <td>~$1</td>
+                        </tr>
+                        <tr>
+                            <td>API Gateway</td>
+                            <td>1000 requests</td>
+                            <td>~$1</td>
+                        </tr>
+                        <tr>
+                            <td>DynamoDB</td>
+                            <td>1000 writes + 2000 reads</td>
+                            <td>~$1</td>
+                        </tr>
+                        <tr>
+                            <td>ECR</td>
+                            <td>5GB storage</td>
+                            <td>~$1</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><strong>TOTAL (Local Models)</strong></td>
+                            <td><strong>~$54/month</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="warning-box">
+                    <strong>⚠️ With API Models:</strong><br/>
+                    • GPT-4 organization: +$50-150/month<br/>
+                    • GPT-4o organization: +$10-30/month<br/>
+                    • Claude Sonnet: +$10-50/month
+                </div>
+                
+                <h3>Cost Optimization Strategies</h3>
+                
+                <ol>
+                    <li><strong>Use local models</strong> for high-volume processing (Qwen 32B)</li>
+                    <li><strong>Use API models</strong> for low-volume or maximum accuracy (GPT-4, Claude)</li>
+                    <li><strong>Hybrid approach:</strong> Local OCR + API organization (best balance)</li>
+                    <li><strong>Provisioned concurrency</strong> only for predictable traffic</li>
+                    <li><strong>S3 lifecycle policies</strong> to archive old documents</li>
+                    <li><strong>DynamoDB TTL</strong> to auto-delete old jobs</li>
+                </ol>
+            </section>
+            
+            <!-- SECTION 9: Security -->
+            <section id="security">
+                <h2>9. Security & Best Practices</h2>
+                
+                <h3>IAM Permissions</h3>
+                
+                <div class="info-box">
+                    <strong>Lambda Execution Role has access to:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>✅ S3: Read/Write to designated buckets only</li>
+                        <li>✅ DynamoDB: Read/Write to jobs table only</li>
+                        <li>✅ CloudWatch: Write logs</li>
+                        <li>❌ No other AWS services (least privilege)</li>
+                    </ul>
+                </div>
+                
+                <h3>Data Privacy</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspect</th>
+                            <th>Local Models</th>
+                            <th>API Models</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Processing Location</td>
+                            <td>✅ Your AWS account</td>
+                            <td>⚠️ OpenAI/Anthropic</td>
+                        </tr>
+                        <tr>
+                            <td>Data Leaves AWS</td>
+                            <td>❌ No</td>
+                            <td>✅ Yes (via API)</td>
+                        </tr>
+                        <tr>
+                            <td>GDPR Compliant</td>
+                            <td>✅ Yes</td>
+                            <td>⚠️ Review provider policy</td>
+                        </tr>
+                        <tr>
+                            <td>HIPAA Compliant</td>
+                            <td>✅ Yes (with BAA)</td>
+                            <td>⚠️ Check provider BAA</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Best Practices</h3>
+                
+                <ol>
+                    <li><strong>Separate AWS Accounts:</strong> Use different accounts for dev/staging/prod</li>
+                    <li><strong>VPC:</strong> Deploy Lambda in VPC for network isolation (optional)</li>
+                    <li><strong>Secrets Manager:</strong> Store API keys in AWS Secrets Manager</li>
+                    <li><strong>CloudTrail:</strong> Enable for auditing and compliance</li>
+                    <li><strong>S3 Encryption:</strong> All buckets encrypted at rest (AES-256)</li>
+                    <li><strong>HTTPS Only:</strong> API Gateway enforces HTTPS</li>
+                    <li><strong>Lifecycle Policies:</strong> Auto-delete old documents</li>
+                    <li><strong>Monitoring:</strong> Set up CloudWatch alarms for errors</li>
+                </ol>
+            </section>
+            
+            <!-- SECTION 10: Troubleshooting -->
+            <section id="troubleshooting">
+                <h2>10. Troubleshooting</h2>
+                
+                <h3>Common Issues & Solutions</h3>
+                
+                <div class="card">
+                    <h4>❌ Issue: Lambda Timeout (15 minutes)</h4>
+                    <p><strong>Symptom:</strong> Processing fails after 15 minutes</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Split large PDFs (>100 pages) into smaller chunks</li>
+                        <li>Use faster models: <code>qwen-7b</code> instead of <code>qwen-32b</code></li>
+                        <li>Process pages individually for very large documents</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>❌ Issue: Out of Memory</h4>
+                    <p><strong>Symptom:</strong> Lambda crashes during processing</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Increase Lambda memory (currently 10GB, max 10GB)</li>
+                        <li>Use smaller organization models (<code>qwen-7b</code> vs <code>qwen-32b</code>)</li>
+                        <li>Consider API models for memory-intensive tasks</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>❌ Issue: Cold Start Latency</h4>
+                    <p><strong>Symptom:</strong> First request takes 10+ seconds</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Enable provisioned concurrency (keeps containers warm)</li>
+                        <li>Use CloudWatch Events to ping Lambda every 5 minutes</li>
+                        <li>Accept cold starts for infrequent usage (cost vs speed trade-off)</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h4>❌ Issue: High Costs</h4>
+                    <p><strong>Symptom:</strong> AWS bill higher than expected</p>
+                    <p><strong>Solutions:</strong></p>
+                    <ul>
+                        <li>Check Lambda invocations in CloudWatch</li>
+                        <li>Review S3 storage costs (old documents)</li>
+                        <li>Set S3 lifecycle policies to auto-delete after N days</li>
+                        <li>Use local models instead of API models</li>
+                    </ul>
+                </div>
+                
+                <h3>Debugging</h3>
+                
+                <pre><code># View Lambda logs
+aws logs tail /aws/lambda/dual-ai-ocr-processor-prod --follow
+
+# Check DynamoDB jobs
+aws dynamodb scan --table-name dual-ai-ocr-jobs-prod --max-items 10
+
+# Check S3 buckets
+aws s3 ls s3://dual-ai-ocr-documents-prod/ --recursive
+
+# Test API endpoint
+curl -X POST https://YOUR_API_ENDPOINT/process \
+  -H "Content-Type: application/json" \
+  -d '{"body": {"sourceType": "base64", ...}}'</code></pre>
+            </section>
+            
+            <!-- Summary -->
+            <section>
+                <h2>✅ Deployment Summary</h2>
+                
+                <div class="highlight-box">
+                    <h3 style="margin-top: 0; color: white;">System Status</h3>
+                    <p style="font-size: 1.2em;"><strong>✅ PRODUCTION READY</strong></p>
+                    
+                    <div style="margin-top: 25px;">
+                        <h4 style="color: white;">Deployed Components:</h4>
+                        <ul>
+                            <li>✅ Lambda Container (10GB, 15min, dual-AI pipeline)</li>
+                            <li>✅ API Gateway (HTTPS REST API)</li>
+                            <li>✅ S3 Buckets (documents + results)</li>
+                            <li>✅ DynamoDB Table (job tracking)</li>
+                            <li>✅ ECR Repository (Docker images)</li>
+                            <li>✅ CloudWatch (logs + monitoring)</li>
+                            <li>✅ IAM Roles (security)</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 25px;">
+                        <h4 style="color: white;">Client SDK Ready:</h4>
+                        <ul>
+                            <li>✅ Python client library (ocr_client.py)</li>
+                            <li>✅ 8 usage examples</li>
+                            <li>✅ Multi-project support</li>
+                            <li>✅ S3 upload + batch processing</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 25px;">
+                        <p style="font-size: 1.1em;">
+                            <strong>Deploy in 1 command:</strong> <code style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 5px;">./deploy.sh</code>
+                        </p>
+                        <p style="font-size: 1.1em; margin-top: 10px;">
+                            <strong>Integrate in 3 lines:</strong> See Section 6
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <h3>🚀 Dual-AI OCR on AWS Lambda</h3>
+            <p style="margin-top: 15px;">Complete serverless OCR system with Vision AI + Language AI</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Created: December 22, 2025 | Version: 1.0 | Status: Production Ready</p>
+            <p style="margin-top: 20px;">
+                <strong>Location:</strong> /Users/tomahawk/DEV/DEVX/OCR/aws-lambda-ocr/
+            </p>
+        </footer>
+    </div>
+    
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>

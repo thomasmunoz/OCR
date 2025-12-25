@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Shortcuts - iTerm2 Configuration</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            padding: 2rem;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #00d4ff, #7c3aed, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #a0a0a0; font-size: 1.1rem; }
+
+        .setup-box {
+            background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .setup-box h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .setup-command {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 1.5rem;
+            display: inline-block;
+            color: #00ff88;
+        }
+        .setup-note { margin-top: 1rem; opacity: 0.9; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .icon-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .icon-green { background: linear-gradient(135deg, #059669, #10b981); }
+        .icon-purple { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+        .icon-orange { background: linear-gradient(135deg, #ea580c, #f97316); }
+        .icon-pink { background: linear-gradient(135deg, #db2777, #ec4899); }
+        .icon-cyan { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #a0a0a0; font-weight: 500; font-size: 0.85rem; text-transform: uppercase; }
+
+        .key {
+            background: linear-gradient(135deg, #374151, #1f2937);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.85rem;
+            border: 1px solid #4b5563;
+            box-shadow: 0 2px 0 #111;
+            display: inline-block;
+            margin: 0.1rem;
+        }
+        .key-combo { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+        .plus { color: #6b7280; font-size: 0.8rem; }
+
+        .iterm-config {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .iterm-config h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #00d4ff;
+        }
+        .step {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid #7c3aed;
+        }
+        .step-num {
+            background: #7c3aed;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .step-title { font-weight: 600; margin-bottom: 0.5rem; }
+        .step-desc { color: #a0a0a0; font-size: 0.9rem; }
+
+        code {
+            background: rgba(0,0,0,0.4);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, monospace;
+            color: #00ff88;
+        }
+
+        .vim-section {
+            margin-top: 2rem;
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.1));
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+        .vim-section h3 { color: #10b981; margin-bottom: 1rem; }
+
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .quick-item {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .quick-item .key { font-size: 1.1rem; margin-bottom: 0.5rem; display: block; }
+        .quick-item span { color: #a0a0a0; font-size: 0.85rem; }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .quick-ref { grid-template-columns: repeat(2, 1fr); }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Claude Code Shortcuts</h1>
+            <p class="subtitle">Complete keyboard reference for iTerm2 configuration</p>
+        </header>
+
+        <div class="setup-box">
+            <h2>Quick Setup for iTerm2</h2>
+            <div class="setup-command">/terminal-setup</div>
+            <p class="setup-note">Run this command in Claude Code to automatically configure Shift+Enter and other shortcuts</p>
+        </div>
+
+        <div class="grid">
+            <!-- General Controls -->
+            <div class="card">
+                <h3><span class="card-icon icon-blue">&#x2328;</span> General Controls</h3>
+                <table>
+                    <tr><th>Shortcut</th><th>Action</th></tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">C</span></td>
+                        <td>Cancel input/generation</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">D</span></td>
+                        <td>Exit Claude Code</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">L</span></td>
+                        <td>Clear terminal screen</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">O</span></td>
+                        <td>Toggle verbose output</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">R</span></td>
+                        <td>Reverse history search</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">V</span></td>
+                        <td>Paste image from clipboard</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">B</span></td>
+                        <td>Move task to background</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Navigation -->
+            <div class="card">
+                <h3><span class="card-icon icon-green">&#x2195;</span> Navigation</h3>
+                <table>
+                    <tr><th>Shortcut</th><th>Action</th></tr>
+                    <tr>
+                        <td><span class="key">&#x2191;</span> / <span class="key">&#x2193;</span></td>
+                        <td>Navigate command history</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Esc</span><span class="plus">+</span><span class="key">Esc</span></td>
+                        <td>Rewind conversation</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Shift</span><span class="plus">+</span><span class="key">Tab</span></td>
+                        <td>Toggle permission modes</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Alt</span><span class="plus">+</span><span class="key">M</span></td>
+                        <td>Toggle permission modes</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Option</span><span class="plus">+</span><span class="key">P</span></td>
+                        <td>Switch AI model</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Tab</span></td>
+                        <td>Autocomplete file paths</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Multiline Input -->
+            <div class="card">
+                <h3><span class="card-icon icon-purple">&#x21B5;</span> Multiline Input</h3>
+                <table>
+                    <tr><th>Shortcut</th><th>Action</th></tr>
+                    <tr>
+                        <td><span class="key">\</span><span class="plus">+</span><span class="key">Enter</span></td>
+                        <td>New line (all terminals)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Shift</span><span class="plus">+</span><span class="key">Enter</span></td>
+                        <td>New line (after setup)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Option</span><span class="plus">+</span><span class="key">Enter</span></td>
+                        <td>New line (macOS)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">Ctrl</span><span class="plus">+</span><span class="key">J</span></td>
+                        <td>Line feed character</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Quick Commands -->
+            <div class="card">
+                <h3><span class="card-icon icon-orange">&#x26A1;</span> Quick Command Prefixes</h3>
+                <table>
+                    <tr><th>Prefix</th><th>Action</th></tr>
+                    <tr>
+                        <td><span class="key">#</span></td>
+                        <td>Add to memory (CLAUDE.md)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">/</span></td>
+                        <td>Slash command</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">!</span></td>
+                        <td>Bash mode - run directly</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">@</span></td>
+                        <td>File path autocomplete</td>
+                    </tr>
+                    <tr>
+                        <td><span class="key">?</span></td>
+                        <td>Show help / shortcuts</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- iTerm2 Configuration -->
+        <div class="iterm-config">
+            <h2>iTerm2 Manual Configuration</h2>
+            <p style="color:#a0a0a0; margin-bottom:1rem;">If <code>/terminal-setup</code> doesn't work, configure manually:</p>
+
+            <div class="step">
+                <p class="step-title"><span class="step-num">1</span> Open iTerm2 Preferences</p>
+                <p class="step-desc"><code>Cmd + ,</code> or iTerm2 → Preferences</p>
+            </div>
+
+            <div class="step">
+                <p class="step-title"><span class="step-num">2</span> Go to Profiles → Keys → General</p>
+                <p class="step-desc">Select your profile, then Keys tab, then General sub-tab</p>
+            </div>
+
+            <div class="step">
+                <p class="step-title"><span class="step-num">3</span> Set Option Key Behavior</p>
+                <p class="step-desc">Set <strong>Left Option Key</strong> to <code>Esc+</code><br>
+                Set <strong>Right Option Key</strong> to <code>Esc+</code></p>
+            </div>
+
+            <div class="step">
+                <p class="step-title"><span class="step-num">4</span> Add Shift+Enter Mapping (Optional)</p>
+                <p class="step-desc">Go to Keys → Key Mappings → Click <code>+</code><br>
+                Keyboard Shortcut: <code>Shift+Enter</code><br>
+                Action: <code>Send Escape Sequence</code><br>
+                Esc+: <code>[13;2u</code></p>
+            </div>
+        </div>
+
+        <!-- Vim Mode -->
+        <div class="vim-section">
+            <h3>Vim Mode (Optional - Enable with <code>/vim</code>)</h3>
+            <div class="quick-ref">
+                <div class="quick-item">
+                    <span class="key">Esc</span>
+                    <span>Normal mode</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">i</span>
+                    <span>Insert mode</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">h j k l</span>
+                    <span>Navigate</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">dd</span>
+                    <span>Delete line</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">w / b</span>
+                    <span>Word forward/back</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">0 / $</span>
+                    <span>Line start/end</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">cc</span>
+                    <span>Change line</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">.</span>
+                    <span>Repeat last</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Essential Shortcuts Summary -->
+        <div style="margin-top:2rem; background:linear-gradient(135deg, rgba(124,58,237,0.2), rgba(37,99,235,0.2)); border-radius:16px; padding:2rem;">
+            <h2 style="text-align:center; margin-bottom:1.5rem;">Essential Shortcuts</h2>
+            <div class="quick-ref">
+                <div class="quick-item">
+                    <span class="key">Ctrl+C</span>
+                    <span>Cancel</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Ctrl+L</span>
+                    <span>Clear screen</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Ctrl+R</span>
+                    <span>Search history</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Esc Esc</span>
+                    <span>Rewind</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Shift+Tab</span>
+                    <span>Toggle mode</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Option+P</span>
+                    <span>Switch model</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">\ + Enter</span>
+                    <span>New line</span>
+                </div>
+                <div class="quick-item">
+                    <span class="key">Tab</span>
+                    <span>Autocomplete</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Generated: December 25, 2025 | Claude Code Shortcuts Reference
+        </footer>
+    </div>
+</body>
+</html>

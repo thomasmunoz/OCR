@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline - Architectural Review Report</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent-red: #e94560;
+            --accent-orange: #f39c12;
+            --accent-green: #27ae60;
+            --accent-blue: #3498db;
+            --accent-purple: #9b59b6;
+            --border-color: #2a2a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent-blue);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            background: var(--bg-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .meta-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .summary-card .label {
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .high { color: var(--accent-red); }
+        .medium { color: var(--accent-orange); }
+        .low { color: var(--accent-green); }
+        .info { color: var(--accent-blue); }
+
+        section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        section h2 {
+            color: var(--accent-blue);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        section h3 {
+            color: var(--accent-purple);
+            margin: 25px 0 15px 0;
+        }
+
+        .issue {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-orange);
+        }
+
+        .issue.critical {
+            border-left-color: var(--accent-red);
+        }
+
+        .issue.warning {
+            border-left-color: var(--accent-orange);
+        }
+
+        .issue.info {
+            border-left-color: var(--accent-blue);
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .issue-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .issue-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-high {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .badge-medium {
+            background: var(--accent-orange);
+            color: white;
+        }
+
+        .badge-low {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .file-ref {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-card);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: var(--accent-blue);
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block .comment {
+            color: #6a737d;
+        }
+
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        .recommendation {
+            background: linear-gradient(135deg, #1a3a2a, #0f3460);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .recommendation h4 {
+            color: var(--accent-green);
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-card);
+            color: var(--accent-blue);
+        }
+
+        tr:hover {
+            background: var(--bg-card);
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-pass::before {
+            content: "[PASS]";
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .check-fail::before {
+            content: "[FAIL]";
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .check-warn::before {
+            content: "[WARN]";
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        .diagram {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            line-height: 1.4;
+        }
+
+        .impact-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .impact-cell {
+            background: var(--bg-primary);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IDP Pipeline - Architectural Review</h1>
+            <p>Comprehensive Analysis of Structural Patterns and SOLID Compliance</p>
+            <div class="meta-info">
+                <div class="meta-item">
+                    <div class="meta-label">Review Date</div>
+                    <div>December 25, 2025</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Reviewer</div>
+                    <div>Claude Opus 4.5</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Overall Impact</div>
+                    <div class="medium">MEDIUM</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="number high">4</div>
+                <div class="label">High Severity Issues</div>
+            </div>
+            <div class="summary-card">
+                <div class="number medium">6</div>
+                <div class="label">Medium Severity Issues</div>
+            </div>
+            <div class="summary-card">
+                <div class="number low">5</div>
+                <div class="label">Low Severity Issues</div>
+            </div>
+            <div class="summary-card">
+                <div class="number info">8</div>
+                <div class="label">Files Reviewed</div>
+            </div>
+        </div>
+
+        <section>
+            <h2>Executive Summary</h2>
+            <p>The IDP Pipeline demonstrates a well-intentioned modular architecture with clear separation between OCR, organization, and pipeline orchestration layers. However, several architectural anti-patterns and SOLID violations have been identified that could impact maintainability, testability, and future scalability.</p>
+
+            <h3>Key Findings</h3>
+            <ul>
+                <li><strong>God Class Pattern:</strong> <code>UnifiedOCRProcessor</code> (1907 lines) handles too many responsibilities</li>
+                <li><strong>Tight Coupling:</strong> Direct imports between models create dependency chains</li>
+                <li><strong>Missing Abstractions:</strong> No interface layer between pipeline and engines</li>
+                <li><strong>Circular Import Risk:</strong> Cross-imports between ocr_engine, visual_extractor, and doc_analyzer</li>
+                <li><strong>Inconsistent Patterns:</strong> Mixed use of dataclasses, dicts, and custom classes for data transfer</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Architecture Overview</h2>
+            <div class="diagram">
++------------------+     +-------------------+     +--------------------+
+|   api/pipeline   |---->|  models/          |---->| config/            |
+|   IDPPipeline    |     |  ocr_engine       |     | intermediate_format|
++------------------+     |  visual_extractor |     | models_config      |
+         |               |  doc_analyzer     |     +--------------------+
+         |               |  organizer_engine |              ^
+         |               |  smart_router     |              |
+         v               +-------------------+              |
++------------------+              |                         |
+| job_queue/       |              |                         |
+| local_queue      |<-------------+-------------------------+
+| redis_queue      |
++------------------+
+
+DEPENDENCY FLOW (Current - Problematic):
+----------------------------------------
+ocr_engine.py ----imports----> visual_extractor.py
+ocr_engine.py ----imports----> doc_analyzer.py
+pipeline.py   ----imports----> ocr_engine.py
+pipeline.py   ----imports----> organizer_engine.py
+pipeline.py   ----imports----> smart_router.py
+
+ISSUES:
+- No abstraction layer between pipeline and engines
+- Direct model imports in ocr_engine create tight coupling
+- visual_extractor and doc_analyzer are optional but not properly abstracted
+            </div>
+        </section>
+
+        <section>
+            <h2>SOLID Principle Violations</h2>
+
+            <div class="issue critical">
+                <div class="issue-header">
+                    <span class="issue-title">S - Single Responsibility Principle Violation</span>
+                    <span class="issue-badge badge-high">HIGH</span>
+                </div>
+                <p><span class="file-ref">models/ocr_engine.py:490-1907</span></p>
+                <p><strong>UnifiedOCRProcessor</strong> class handles:</p>
+                <ul>
+                    <li>PDF text extraction (direct)</li>
+                    <li>PDF structure analysis</li>
+                    <li>Image OCR processing</li>
+                    <li>Mixed PDF processing</li>
+                    <li>Signature detection (digital + handwritten)</li>
+                    <li>Language detection</li>
+                    <li>Table detection</li>
+                    <li>Enhanced output building (v2.0 and v2.1)</li>
+                    <li>Visual content extraction coordination</li>
+                </ul>
+                <div class="code-block">
+<span class="comment"># Current: 1400+ lines in one class with 20+ methods</span>
+<span class="keyword">class</span> UnifiedOCRProcessor:
+    <span class="keyword">def</span> _has_digital_text(...)
+    <span class="keyword">def</span> detect_digital_signatures(...)
+    <span class="keyword">def</span> detect_handwritten_signatures(...)
+    <span class="keyword">def</span> get_signature_status(...)
+    <span class="keyword">def</span> detect_language(...)
+    <span class="keyword">def</span> analyze_pdf_structure(...)
+    <span class="keyword">def</span> _extract_pdf_text_direct(...)
+    <span class="keyword">def</span> process_mixed_pdf(...)
+    <span class="keyword">def</span> process_document(...)
+    <span class="keyword">def</span> detect_tables_pdf(...)
+    <span class="keyword">def</span> build_enhanced_output(...)
+    <span class="keyword">def</span> build_enhanced_output_v21(...)
+    <span class="comment"># ... 10+ more methods</span>
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Split into focused services:</p>
+                    <ul>
+                        <li><code>PDFAnalyzerService</code> - PDF structure analysis</li>
+                        <li><code>SignatureDetectorService</code> - Signature detection</li>
+                        <li><code>LanguageDetectorService</code> - Language detection</li>
+                        <li><code>TableExtractorService</code> - Table extraction</li>
+                        <li><code>OCRCoordinator</code> - Orchestrates above services</li>
+                        <li><code>OutputBuilder</code> - Builds JSON output formats</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="issue critical">
+                <div class="issue-header">
+                    <span class="issue-title">O - Open/Closed Principle Violation</span>
+                    <span class="issue-badge badge-high">HIGH</span>
+                </div>
+                <p><span class="file-ref">models/ocr_engine.py:463-471</span></p>
+                <p>Adding new OCR engines requires modifying the ENGINE_MAP dictionary directly.</p>
+                <div class="code-block">
+<span class="comment"># Current: Hard-coded engine mapping</span>
+ENGINE_MAP = {
+    <span class="string">"qwen2_vl_2b"</span>: Qwen2VLEngine,
+    <span class="string">"qwen2_vl_7b"</span>: Qwen2VLEngine,
+    <span class="string">"got_ocr2"</span>: GOTOCREngine,
+    <span class="string">"trocr_large_printed"</span>: TrOCREngine,
+    <span class="string">"trocr_large_handwritten"</span>: TrOCREngine,
+    <span class="string">"florence2_large"</span>: Florence2Engine,
+}
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Use a registry pattern with auto-discovery or decorator-based registration:</p>
+                    <div class="code-block">
+<span class="keyword">class</span> OCREngineRegistry:
+    _engines: Dict[str, Type[BaseOCREngine]] = {}
+
+    <span class="keyword">@classmethod</span>
+    <span class="keyword">def</span> register(cls, model_key: str):
+        <span class="keyword">def</span> decorator(engine_class):
+            cls._engines[model_key] = engine_class
+            <span class="keyword">return</span> engine_class
+        <span class="keyword">return</span> decorator
+
+<span class="comment"># Usage in engine file:</span>
+@OCREngineRegistry.register(<span class="string">"qwen2_vl_2b"</span>)
+<span class="keyword">class</span> Qwen2VLEngine(BaseOCREngine):
+    ...
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">
+                    <span class="issue-title">D - Dependency Inversion Principle Violation</span>
+                    <span class="issue-badge badge-medium">MEDIUM</span>
+                </div>
+                <p><span class="file-ref">api/pipeline.py:27-29</span></p>
+                <p>High-level module (IDPPipeline) depends on concrete implementations rather than abstractions.</p>
+                <div class="code-block">
+<span class="comment"># Current: Direct concrete imports</span>
+<span class="keyword">from</span> models.ocr_engine <span class="keyword">import</span> UnifiedOCRProcessor
+<span class="keyword">from</span> models.organizer_engine <span class="keyword">import</span> UnifiedOrganizer
+<span class="keyword">from</span> models.smart_router <span class="keyword">import</span> SmartModelRouter
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Introduce interfaces and use dependency injection:</p>
+                    <div class="code-block">
+<span class="comment"># interfaces.py</span>
+<span class="keyword">from</span> abc <span class="keyword">import</span> ABC, abstractmethod
+
+<span class="keyword">class</span> IOCRProcessor(ABC):
+    @abstractmethod
+    <span class="keyword">def</span> process_document(self, file_path: str, job_id: str) -> OCRIntermediateResult:
+        <span class="keyword">pass</span>
+
+<span class="keyword">class</span> IOrganizer(ABC):
+    @abstractmethod
+    <span class="keyword">def</span> process(self, ocr_result: OCRIntermediateResult) -> FinalJSONOutput:
+        <span class="keyword">pass</span>
+
+<span class="comment"># pipeline.py - Use injection</span>
+<span class="keyword">class</span> IDPPipeline:
+    <span class="keyword">def</span> __init__(self,
+                 ocr_processor: IOCRProcessor = None,
+                 organizer: IOrganizer = None):
+        self._ocr_processor = ocr_processor or UnifiedOCRProcessor()
+        self._organizer = organizer or UnifiedOrganizer()
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">
+                    <span class="issue-title">I - Interface Segregation Principle Violation</span>
+                    <span class="issue-badge badge-medium">MEDIUM</span>
+                </div>
+                <p><span class="file-ref">models/ocr_engine.py:97-127</span></p>
+                <p>BaseOCREngine abstract class forces all implementations to include unload_model() even if not applicable.</p>
+                <div class="code-block">
+<span class="keyword">class</span> BaseOCREngine(ABC):
+    <span class="keyword">def</span> unload_model(self):
+        <span class="string">"""Unload model from memory"""</span>
+        self.model = None
+        self.processor = None
+        self.loaded = False
+        <span class="keyword">import</span> gc
+        <span class="keyword">import</span> torch
+        gc.collect()
+        <span class="keyword">if</span> torch.cuda.is_available():
+            torch.cuda.empty_cache()
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Split into smaller interfaces:</p>
+                    <ul>
+                        <li><code>IOCREngine</code> - Core OCR methods only</li>
+                        <li><code>ILoadableModel</code> - load_model(), unload_model()</li>
+                        <li><code>IResourceManaged</code> - Memory management</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Coupling and Dependency Issues</h2>
+
+            <div class="issue critical">
+                <div class="issue-header">
+                    <span class="issue-title">Circular Import Risk</span>
+                    <span class="issue-badge badge-high">HIGH</span>
+                </div>
+                <p><span class="file-ref">models/ocr_engine.py:31-47</span></p>
+                <p>The ocr_engine module conditionally imports visual_extractor and doc_analyzer, which may import shared types from intermediate_format, creating fragile import chains.</p>
+                <div class="code-block">
+<span class="comment"># ocr_engine.py imports visual_extractor</span>
+<span class="keyword">try</span>:
+    <span class="keyword">from</span> models.visual_extractor <span class="keyword">import</span> (
+        VisualContentExtractor, EnhancedTable, DetectedDiagram, DetectedChart,
+        build_enhanced_v21_output
+    )
+    VISUAL_EXTRACTOR_AVAILABLE = True
+<span class="keyword">except</span> ImportError:
+    VISUAL_EXTRACTOR_AVAILABLE = False
+
+<span class="comment"># ocr_engine.py also imports doc_analyzer</span>
+<span class="keyword">try</span>:
+    <span class="keyword">from</span> models.doc_analyzer <span class="keyword">import</span> DocumentAnalyzer, analyze_document
+    DOC_ANALYZER_AVAILABLE = True
+<span class="keyword">except</span> ImportError:
+    DOC_ANALYZER_AVAILABLE = False
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Use a plugin/adapter pattern with lazy loading:</p>
+                    <ul>
+                        <li>Create an <code>ExtractorPlugin</code> interface</li>
+                        <li>Register plugins at application startup</li>
+                        <li>OCR engine receives plugins via dependency injection</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">
+                    <span class="issue-title">Tight Coupling Between Pipeline and Queue</span>
+                    <span class="issue-badge badge-medium">MEDIUM</span>
+                </div>
+                <p><span class="file-ref">api/pipeline.py:62-69</span></p>
+                <p>Pipeline directly instantiates queue implementations based on environment variables.</p>
+                <div class="code-block">
+<span class="comment"># Direct instantiation creates tight coupling</span>
+<span class="keyword">if</span> queue_type == <span class="string">"redis"</span>:
+    <span class="keyword">from</span> job_queue.redis_queue <span class="keyword">import</span> RedisQueue
+    self.queue = RedisQueue()
+<span class="keyword">else</span>:
+    <span class="keyword">from</span> job_queue.local_queue <span class="keyword">import</span> LocalQueue
+    self.queue = LocalQueue(queue_db)
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Use a factory pattern:</p>
+                    <div class="code-block">
+<span class="keyword">class</span> QueueFactory:
+    @staticmethod
+    <span class="keyword">def</span> create(queue_type: str, **kwargs) -> IJobQueue:
+        factories = {
+            <span class="string">"redis"</span>: <span class="keyword">lambda</span>: RedisQueue(),
+            <span class="string">"sqlite"</span>: <span class="keyword">lambda</span>: LocalQueue(kwargs.get(<span class="string">"db_path"</span>))
+        }
+        <span class="keyword">return</span> factories.get(queue_type, factories[<span class="string">"sqlite"</span>])()
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Data Transfer Object Issues</h2>
+
+            <div class="issue warning">
+                <div class="issue-header">
+                    <span class="issue-title">Inconsistent Data Transfer Patterns</span>
+                    <span class="issue-badge badge-medium">MEDIUM</span>
+                </div>
+                <p>The codebase mixes three different patterns for data transfer:</p>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Usage Location</th>
+                        <th>Issue</th>
+                    </tr>
+                    <tr>
+                        <td>Dataclasses</td>
+                        <td><span class="file-ref">config/intermediate_format.py</span></td>
+                        <td>Good: Type-safe, serializable</td>
+                    </tr>
+                    <tr>
+                        <td>Raw Dictionaries</td>
+                        <td><span class="file-ref">ocr_engine.py:1454-1693</span></td>
+                        <td>Bad: No type checking, error-prone</td>
+                    </tr>
+                    <tr>
+                        <td>Mixed</td>
+                        <td><span class="file-ref">api/pipeline.py:251-261</span></td>
+                        <td>Confusing: Returns either FinalJSONOutput or dict</td>
+                    </tr>
+                </table>
+                <div class="code-block">
+<span class="comment"># Problem: Method returns different types</span>
+<span class="keyword">if</span> enhanced_output <span class="keyword">and</span> enhanced_ocr_data:
+    final_result = self._org_engine.process_enhanced(...)  <span class="comment"># Returns dict</span>
+<span class="keyword">else</span>:
+    final_result = self._org_engine.process(...)  <span class="comment"># Returns FinalJSONOutput</span>
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Standardize on dataclasses with a common base:</p>
+                    <ul>
+                        <li>All DTOs should extend <code>SerializableResult</code></li>
+                        <li>Use <code>to_dict()</code> methods consistently</li>
+                        <li>Never return raw dicts from public APIs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="issue info">
+                <div class="issue-header">
+                    <span class="issue-title">Duplicate Type Definitions</span>
+                    <span class="issue-badge badge-low">LOW</span>
+                </div>
+                <p><span class="file-ref">config/intermediate_format.py</span> and <span class="file-ref">config/models_config.py</span></p>
+                <p>DocumentType enum is defined in both files with different values:</p>
+                <div class="code-block">
+<span class="comment"># models_config.py</span>
+<span class="keyword">class</span> DocumentType(Enum):
+    PRINTED_TEXT = <span class="string">"printed_text"</span>
+    HANDWRITTEN = <span class="string">"handwritten"</span>
+    TABLE = <span class="string">"table"</span>
+    ...
+
+<span class="comment"># doc_analyzer.py</span>
+<span class="keyword">class</span> DocumentType(Enum):
+    CONTRACT = <span class="string">"contract"</span>
+    FORM = <span class="string">"form"</span>
+    INVOICE = <span class="string">"invoice"</span>
+    ...
+                </div>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Consolidate into a single types module with clear distinction:</p>
+                    <ul>
+                        <li><code>InputDocumentType</code> - For model selection (printed, handwritten, etc.)</li>
+                        <li><code>SemanticDocumentType</code> - For classification (contract, invoice, etc.)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Code Smell: God Functions</h2>
+
+            <div class="issue critical">
+                <div class="issue-header">
+                    <span class="issue-title">build_enhanced_output Method - 240 Lines</span>
+                    <span class="issue-badge badge-high">HIGH</span>
+                </div>
+                <p><span class="file-ref">models/ocr_engine.py:1454-1693</span></p>
+                <p>This method builds the v2.0 JSON output but handles too many concerns:</p>
+                <ul>
+                    <li>Signature detection coordination</li>
+                    <li>Table detection coordination</li>
+                    <li>Per-page statistics calculation</li>
+                    <li>Language detection per page</li>
+                    <li>Quality metric computation</li>
+                    <li>JSON structure building</li>
+                </ul>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Extract to builder pattern with specialized builders:</p>
+                    <div class="code-block">
+<span class="keyword">class</span> EnhancedOutputBuilder:
+    <span class="keyword">def</span> __init__(self, ocr_result, pdf_path):
+        self._result = ocr_result
+        self._pdf_path = pdf_path
+
+    <span class="keyword">def</span> with_signatures(self) -> <span class="string">'EnhancedOutputBuilder'</span>:
+        self._signatures = SignatureDetector().detect(self._pdf_path)
+        <span class="keyword">return</span> self
+
+    <span class="keyword">def</span> with_tables(self) -> <span class="string">'EnhancedOutputBuilder'</span>:
+        self._tables = TableExtractor().extract(self._pdf_path)
+        <span class="keyword">return</span> self
+
+    <span class="keyword">def</span> with_language_detection(self) -> <span class="string">'EnhancedOutputBuilder'</span>:
+        self._languages = LanguageDetector().detect_per_page(self._result)
+        <span class="keyword">return</span> self
+
+    <span class="keyword">def</span> build(self) -> EnhancedJSONOutput:
+        <span class="comment"># Compose final output</span>
+        ...
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue warning">
+                <div class="issue-header">
+                    <span class="issue-title">process_job Method - 200+ Lines</span>
+                    <span class="issue-badge badge-medium">MEDIUM</span>
+                </div>
+                <p><span class="file-ref">api/pipeline.py:119-337</span></p>
+                <p>Handles entire pipeline orchestration in one method with multiple stages.</p>
+                <div class="recommendation">
+                    <h4>Recommended Refactoring</h4>
+                    <p>Use the Pipeline pattern with discrete stages:</p>
+                    <div class="code-block">
+<span class="keyword">class</span> ProcessingPipeline:
+    <span class="keyword">def</span> __init__(self):
+        self.stages = [
+            AnalysisStage(),
+            ModelSelectionStage(),
+            OCRStage(),
+            EnhancementStage(),
+            OrganizationStage(),
+            OutputStage()
+        ]
+
+    <span class="keyword">def</span> execute(self, job: Job) -> PipelineResult:
+        context = PipelineContext(job)
+        <span class="keyword">for</span> stage <span class="keyword">in</span> self.stages:
+            context = stage.execute(context)
+        <span class="keyword">return</span> context.result
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Pattern Compliance Checklist</h2>
+            <ul class="checklist">
+                <li class="check-pass">Abstract Base Classes: Used for OCR engines (BaseOCREngine)</li>
+                <li class="check-pass">Factory Pattern: Partial use in get_ocr_engine()</li>
+                <li class="check-fail">Dependency Injection: Not implemented - direct instantiation everywhere</li>
+                <li class="check-fail">Repository Pattern: No data access abstraction layer</li>
+                <li class="check-warn">Strategy Pattern: Engines are strategies but selection is hard-coded</li>
+                <li class="check-fail">Observer Pattern: Progress callbacks are ad-hoc, no event system</li>
+                <li class="check-warn">Builder Pattern: Partial - needs completion for output building</li>
+                <li class="check-pass">Dataclass Usage: Good use for DTOs in intermediate_format.py</li>
+                <li class="check-fail">Interface Segregation: Monolithic interfaces need splitting</li>
+                <li class="check-warn">Error Handling: Inconsistent - bare except blocks present</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Long-Term Implications</h2>
+
+            <h3>Scalability Concerns</h3>
+            <table>
+                <tr>
+                    <th>Concern</th>
+                    <th>Impact</th>
+                    <th>Affected Files</th>
+                </tr>
+                <tr>
+                    <td>Model Loading Memory</td>
+                    <td class="high">HIGH</td>
+                    <td>ocr_engine.py, organizer_engine.py</td>
+                </tr>
+                <tr>
+                    <td>Sequential Processing</td>
+                    <td class="medium">MEDIUM</td>
+                    <td>pipeline.py</td>
+                </tr>
+                <tr>
+                    <td>No Caching Layer</td>
+                    <td class="medium">MEDIUM</td>
+                    <td>All models</td>
+                </tr>
+                <tr>
+                    <td>Hardcoded Timeouts</td>
+                    <td class="low">LOW</td>
+                    <td>pipeline.py:235</td>
+                </tr>
+            </table>
+
+            <h3>Testability Impact</h3>
+            <ul>
+                <li><strong>Unit Testing:</strong> Difficult due to tight coupling - requires mocking entire modules</li>
+                <li><strong>Integration Testing:</strong> Complex due to model dependencies</li>
+                <li><strong>Dependency Injection:</strong> Missing - prevents easy test doubles</li>
+            </ul>
+
+            <h3>Maintenance Burden</h3>
+            <p>Adding new features requires modifications in multiple files:</p>
+            <ul>
+                <li>New OCR engine: models_config.py + ocr_engine.py + smart_router.py</li>
+                <li>New output format: ocr_engine.py + intermediate_format.py + pipeline.py</li>
+                <li>New queue type: pipeline.py + new queue module</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Recommended Refactoring Priority</h2>
+
+            <div class="impact-matrix">
+                <div class="impact-cell" style="background: #4a1a2e;">
+                    <h4 style="color: var(--accent-red);">Priority 1 (High Impact)</h4>
+                    <p>Split UnifiedOCRProcessor</p>
+                    <p>Add interface layer</p>
+                </div>
+                <div class="impact-cell" style="background: #3a2a1e;">
+                    <h4 style="color: var(--accent-orange);">Priority 2 (Medium Impact)</h4>
+                    <p>Implement DI container</p>
+                    <p>Standardize DTOs</p>
+                </div>
+                <div class="impact-cell" style="background: #1a3a2e;">
+                    <h4 style="color: var(--accent-green);">Priority 3 (Improvement)</h4>
+                    <p>Add plugin system</p>
+                    <p>Pipeline stages</p>
+                </div>
+            </div>
+
+            <h3>Suggested Module Structure</h3>
+            <div class="diagram">
+idp_pipeline/
++-- core/
+|   +-- interfaces/
+|   |   +-- ocr_engine.py      # IOCREngine interface
+|   |   +-- organizer.py       # IOrganizer interface
+|   |   +-- queue.py           # IJobQueue interface
+|   +-- dto/
+|   |   +-- ocr_result.py      # OCR-related dataclasses
+|   |   +-- output.py          # Output format dataclasses
+|   +-- exceptions.py          # Custom exceptions
++-- engines/
+|   +-- ocr/
+|   |   +-- base.py            # BaseOCREngine
+|   |   +-- qwen.py            # Qwen engines
+|   |   +-- got.py             # GOT-OCR engine
+|   |   +-- trocr.py           # TrOCR engine
+|   |   +-- registry.py        # Engine registry
+|   +-- organizer/
+|       +-- base.py
+|       +-- qwen.py
+|       +-- llama.py
++-- services/
+|   +-- pdf_analyzer.py        # PDF analysis service
+|   +-- signature_detector.py  # Signature detection
+|   +-- language_detector.py   # Language detection
+|   +-- table_extractor.py     # Table extraction
+|   +-- output_builder.py      # Output building
++-- pipeline/
+|   +-- stages/                # Pipeline stages
+|   +-- coordinator.py         # Pipeline orchestration
++-- queue/
+|   +-- local.py
+|   +-- redis.py
+|   +-- factory.py
++-- config/
+    +-- models.py
+    +-- settings.py
+            </div>
+        </section>
+
+        <section>
+            <h2>Specific File:Line Issue References</h2>
+            <table>
+                <tr>
+                    <th>File</th>
+                    <th>Line</th>
+                    <th>Issue</th>
+                    <th>Severity</th>
+                </tr>
+                <tr>
+                    <td>models/ocr_engine.py</td>
+                    <td>39</td>
+                    <td>Logger used before definition</td>
+                    <td class="medium">MEDIUM</td>
+                </tr>
+                <tr>
+                    <td>models/ocr_engine.py</td>
+                    <td>186</td>
+                    <td>Bare except clause</td>
+                    <td class="low">LOW</td>
+                </tr>
+                <tr>
+                    <td>models/ocr_engine.py</td>
+                    <td>490-1907</td>
+                    <td>God class (1400+ lines)</td>
+                    <td class="high">HIGH</td>
+                </tr>
+                <tr>
+                    <td>models/organizer_engine.py</td>
+                    <td>186</td>
+                    <td>Bare except clause</td>
+                    <td class="low">LOW</td>
+                </tr>
+                <tr>
+                    <td>models/organizer_engine.py</td>
+                    <td>278</td>
+                    <td>Bare except clause</td>
+                    <td class="low">LOW</td>
+                </tr>
+                <tr>
+                    <td>api/pipeline.py</td>
+                    <td>62-69</td>
+                    <td>Direct queue instantiation</td>
+                    <td class="medium">MEDIUM</td>
+                </tr>
+                <tr>
+                    <td>api/pipeline.py</td>
+                    <td>227-237</td>
+                    <td>Hardcoded sleep(2) for memory</td>
+                    <td class="low">LOW</td>
+                </tr>
+                <tr>
+                    <td>config/intermediate_format.py</td>
+                    <td>All</td>
+                    <td>Good: Well-structured DTOs</td>
+                    <td class="info">INFO</td>
+                </tr>
+                <tr>
+                    <td>models/smart_router.py</td>
+                    <td>97-98</td>
+                    <td>Bare except clause</td>
+                    <td class="low">LOW</td>
+                </tr>
+                <tr>
+                    <td>models/visual_extractor.py</td>
+                    <td>1-1121</td>
+                    <td>Good: Well-separated concerns</td>
+                    <td class="info">INFO</td>
+                </tr>
+                <tr>
+                    <td>models/doc_analyzer.py</td>
+                    <td>1-629</td>
+                    <td>Good: Single responsibility</td>
+                    <td class="info">INFO</td>
+                </tr>
+            </table>
+        </section>
+
+        <footer>
+            <p>Generated by Claude Opus 4.5 | IDP Pipeline Architectural Review | December 25, 2025</p>
+            <p>This report identifies structural issues and provides actionable refactoring recommendations.</p>
+        </footer>
+    </div>
+</body>
+</html>

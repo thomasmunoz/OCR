@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline - Per-Page Analysis System</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; background: #0f0f1a; color: #e0e0e0; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; margin-bottom: 16px; }
+        h3 { color: #3b82f6; margin-top: 20px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+        .code { background: #1a1a2e; padding: 15px; border-radius: 8px; font-family: 'Menlo', monospace; overflow-x: auto; margin: 10px 0; font-size: 0.85rem; white-space: pre-wrap; }
+        .highlight { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #f59e0b; }
+        .oracle-badge { display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-left: 10px; }
+        .flow-diagram { display: flex; flex-direction: column; gap: 15px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .flow-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .flow-step { background: rgba(59, 130, 246, 0.2); border: 2px solid #3b82f6; border-radius: 8px; padding: 10px 15px; text-align: center; min-width: 120px; }
+        .flow-step.digital { border-color: #10b981; background: rgba(16, 185, 129, 0.2); }
+        .flow-step.ocr { border-color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+        .flow-step.mixed { border-color: #f59e0b; background: rgba(245, 158, 11, 0.2); }
+        .flow-arrow { color: #6b7280; font-size: 1.2rem; }
+        .page-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .page-type-card { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; text-align: center; }
+        .page-type-icon { font-size: 2rem; margin-bottom: 10px; }
+        .metric-row { display: flex; gap: 20px; margin: 15px 0; flex-wrap: wrap; }
+        .metric-card { flex: 1; min-width: 150px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; padding: 15px; text-align: center; }
+        .metric-value { font-size: 1.8rem; font-weight: bold; color: #3b82f6; }
+        .metric-label { color: #a0a0a0; font-size: 0.85rem; }
+        .comparison-table { margin: 20px 0; }
+        .comparison-table td:first-child { font-weight: bold; color: #a0a0a0; }
+    </style>
+</head>
+<body>
+    <div class="highlight">
+        <h1>Per-Page Analysis System <span class="oracle-badge">ORACLE PROTOCOL</span></h1>
+        <p>December 25, 2025 - Intelligent Mixed PDF Processing</p>
+    </div>
+
+    <div class="card">
+        <h2>Problem Statement</h2>
+        <p>Real-world PDFs often contain <strong>mixed content</strong>:</p>
+        <ul style="line-height: 2;">
+            <li><strong>Digital text pages</strong> - Native text that can be extracted directly</li>
+            <li><strong>Scanned image pages</strong> - Images of documents that need OCR</li>
+            <li><strong>Mixed pages</strong> - Digital text WITH embedded images containing text</li>
+            <li><strong>Image-only pages</strong> - Photos, diagrams, charts with potential text</li>
+        </ul>
+        <p class="error" style="margin-top: 15px;">
+            <strong>Previous approach:</strong> Document-level detection - if average chars/page > 50, treat entire PDF as digital.
+            This MISSED text on scanned pages in mixed documents!
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Solution: Per-Page Analysis</h2>
+        <p>The pipeline now analyzes <strong>EACH page individually</strong> before processing:</p>
+
+        <div class="flow-diagram">
+            <div class="flow-row">
+                <div class="flow-step">PDF Upload</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step" style="border-color: #f59e0b;">analyze_pdf_structure()</div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step">Per-Page Classification</div>
+            </div>
+            <div class="flow-row" style="margin-left: 40px;">
+                <span class="flow-arrow">↓</span>
+            </div>
+            <div class="flow-row">
+                <div class="flow-step digital">Pure Digital → Direct Extract</div>
+                <div class="flow-step ocr">Pure Scanned → Full OCR</div>
+                <div class="flow-step mixed">Mixed → Hybrid Processing</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Page Type Classification</h2>
+        <div class="page-type-grid">
+            <div class="page-type-card">
+                <div class="page-type-icon">📄</div>
+                <h4 class="success">DIGITAL_TEXT</h4>
+                <p style="font-size: 0.9rem;">Native text layer, no significant images</p>
+                <p style="font-size: 0.8rem; color: #a0a0a0;">Method: Direct extraction</p>
+            </div>
+            <div class="page-type-card">
+                <div class="page-type-icon">🖼️</div>
+                <h4 class="error">SCANNED_IMAGE</h4>
+                <p style="font-size: 0.9rem;">Full-page image, no text layer</p>
+                <p style="font-size: 0.8rem; color: #a0a0a0;">Method: OCR</p>
+            </div>
+            <div class="page-type-card">
+                <div class="page-type-icon">📊</div>
+                <h4 class="warning">MIXED_CONTENT</h4>
+                <p style="font-size: 0.9rem;">Text + images with potential text</p>
+                <p style="font-size: 0.8rem; color: #a0a0a0;">Method: Hybrid</p>
+            </div>
+            <div class="page-type-card">
+                <div class="page-type-icon">📷</div>
+                <h4 class="info">IMAGE_WITH_TEXT</h4>
+                <p style="font-size: 0.9rem;">Images that may contain text</p>
+                <p style="font-size: 0.8rem; color: #a0a0a0;">Method: OCR</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Detection Logic</h2>
+        <div class="code">def analyze_pdf_structure(self, pdf_path: str) -> DocumentAnalysis:
+    """Comprehensive per-page analysis of PDF structure."""
+
+    for page_num in range(total_pages):
+        page = doc.load_page(page_num)
+
+        # Check text layer
+        text = page.get_text("text")
+        char_count = len(text.strip())
+        has_text_layer = char_count >= 50  # MIN_CHARS_PER_PAGE
+
+        # Check images
+        images = page.get_images(full=True)
+        image_count = len(images)
+
+        # Calculate image coverage (% of page area)
+        total_image_area = sum(get_image_area(img) for img in images)
+        image_coverage = total_image_area / page_area
+        has_significant_images = image_coverage > 0.3  # >30%
+
+        # Classify page type
+        if has_text_layer and not has_significant_images:
+            page_type = DIGITAL_TEXT      # → Direct extraction
+        elif not has_text_layer and image_coverage > 0.7:
+            page_type = SCANNED_IMAGE     # → OCR
+        elif has_text_layer and has_significant_images:
+            page_type = MIXED_CONTENT     # → Hybrid
+        elif image_count > 0:
+            page_type = IMAGE_WITH_TEXT   # → OCR</div>
+    </div>
+
+    <div class="card">
+        <h2>Document Type Routing</h2>
+        <table>
+            <tr>
+                <th>Document Type</th>
+                <th>Criteria</th>
+                <th>Processing Strategy</th>
+                <th>Speed</th>
+            </tr>
+            <tr>
+                <td class="success">pure_digital</td>
+                <td>All pages have text layer, no OCR needed</td>
+                <td>Direct extraction (PyMuPDF)</td>
+                <td class="success">~0.02s/page</td>
+            </tr>
+            <tr>
+                <td class="error">pure_scanned</td>
+                <td>All pages are images, no text layer</td>
+                <td>Full OCR (TrOCR/Qwen2)</td>
+                <td class="error">~10s/page</td>
+            </tr>
+            <tr>
+                <td class="warning">mixed</td>
+                <td>Some pages digital, some scanned/mixed</td>
+                <td>Hybrid per-page processing</td>
+                <td class="warning">Varies by page</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Hybrid Processing for Mixed Pages</h2>
+        <p>For pages with BOTH digital text AND images containing text:</p>
+        <div class="code">def process_mixed_pdf(self, pdf_path, doc_analysis, job_id, progress_callback):
+    for page_num in range(total_pages):
+        page_analysis = doc_analysis.pages[page_num]
+
+        # Step 1: Extract digital text (if available)
+        if page_analysis.extraction_method in ["direct", "hybrid"]:
+            digital_text = page.get_text("text")
+            page_text = digital_text
+            confidence = 0.99
+
+        # Step 2: OCR for images (if needed)
+        if page_analysis.needs_ocr:
+            # Convert page to image
+            pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+
+            # Run OCR
+            ocr_text, ocr_conf, _ = self.engine.process_image(temp_path)
+
+            if page_analysis.extraction_method == "hybrid":
+                # Merge: digital text + OCR from images
+                page_text = page_text + "\n\n[IMAGE TEXT]\n" + ocr_text
+                confidence = 0.95 * 0.7 + ocr_conf * 0.3
+            else:
+                page_text = ocr_text
+                confidence = ocr_conf</div>
+    </div>
+
+    <div class="card">
+        <h2>Example Scenarios</h2>
+
+        <h3>Scenario 1: Contract PDF (Pure Digital)</h3>
+        <table class="comparison-table">
+            <tr><td>Document</td><td>AnyTech365 Service Agreement (10 pages)</td></tr>
+            <tr><td>Analysis</td><td class="success">10 digital pages, 0 OCR, 0 mixed</td></tr>
+            <tr><td>Strategy</td><td>direct_extraction</td></tr>
+            <tr><td>Result</td><td class="success">24,285 chars in 0.02s</td></tr>
+        </table>
+
+        <h3>Scenario 2: Scanned Invoice (Pure Scanned)</h3>
+        <table class="comparison-table">
+            <tr><td>Document</td><td>Scanned paper invoice (3 pages)</td></tr>
+            <tr><td>Analysis</td><td class="error">0 digital pages, 3 OCR, 0 mixed</td></tr>
+            <tr><td>Strategy</td><td>full_ocr</td></tr>
+            <tr><td>Result</td><td>OCR all pages with TrOCR</td></tr>
+        </table>
+
+        <h3>Scenario 3: Report with Charts (Mixed)</h3>
+        <table class="comparison-table">
+            <tr><td>Document</td><td>Annual report with embedded charts (20 pages)</td></tr>
+            <tr><td>Analysis</td><td class="warning">15 digital, 2 OCR, 3 mixed</td></tr>
+            <tr><td>Strategy</td><td>hybrid_extraction</td></tr>
+            <tr><td>Result</td><td>
+                <ul style="margin: 0; padding-left: 20px;">
+                    <li>Pages 1-15: Direct extraction (fast)</li>
+                    <li>Pages 16-17: OCR (scanned appendix)</li>
+                    <li>Pages 18-20: Hybrid (text + chart OCR)</li>
+                </ul>
+            </td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Performance Comparison</h2>
+        <div class="metric-row">
+            <div class="metric-card">
+                <div class="metric-value">0.02s</div>
+                <div class="metric-label">Digital Page</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">~10s</div>
+                <div class="metric-label">OCR Page</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">~12s</div>
+                <div class="metric-label">Hybrid Page</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">99%</div>
+                <div class="metric-label">Digital Confidence</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Data Structures</h2>
+        <div class="code">@dataclass
+class PageAnalysis:
+    page_number: int
+    page_type: PageType           # DIGITAL_TEXT, SCANNED_IMAGE, MIXED_CONTENT, etc.
+    char_count: int               # Characters in text layer
+    image_count: int              # Embedded images
+    image_coverage: float         # 0-1, % of page covered by images
+    has_text_layer: bool
+    has_significant_images: bool
+    needs_ocr: bool               # Whether OCR should be applied
+    confidence: float             # Classification confidence
+    extraction_method: str        # "direct", "ocr", or "hybrid"
+
+
+@dataclass
+class DocumentAnalysis:
+    file_path: str
+    total_pages: int
+    pages: List[PageAnalysis]
+    document_type: str            # "pure_digital", "pure_scanned", "mixed"
+    digital_pages: List[int]      # Page numbers with digital text
+    ocr_pages: List[int]          # Page numbers needing OCR
+    mixed_pages: List[int]        # Page numbers with mixed content
+    total_digital_chars: int
+    estimated_processing_time: float
+    recommended_strategy: str</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-color: rgba(16,185,129,0.3);">
+        <h2 style="color: #10b981; border-color: #10b981;">Implementation Status</h2>
+        <ul style="line-height: 2;">
+            <li class="success"><strong>PageType enum</strong> - Classification types defined</li>
+            <li class="success"><strong>PageAnalysis dataclass</strong> - Per-page metadata structure</li>
+            <li class="success"><strong>DocumentAnalysis dataclass</strong> - Full document structure</li>
+            <li class="success"><strong>analyze_pdf_structure()</strong> - Pre-processing analysis</li>
+            <li class="success"><strong>process_mixed_pdf()</strong> - Hybrid per-page extraction</li>
+            <li class="success"><strong>process_document()</strong> - Intelligent routing updated</li>
+            <li class="success"><strong>Tested</strong> - Contract PDF correctly identified as pure_digital</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Files Modified</h2>
+        <table>
+            <tr><th>File</th><th>Changes</th></tr>
+            <tr>
+                <td><code>models/ocr_engine.py</code></td>
+                <td>
+                    <ul>
+                        <li>Added <code>PageType</code> enum</li>
+                        <li>Added <code>PageAnalysis</code> dataclass</li>
+                        <li>Added <code>DocumentAnalysis</code> dataclass</li>
+                        <li>Added <code>analyze_pdf_structure()</code> method</li>
+                        <li>Added <code>process_mixed_pdf()</code> method</li>
+                        <li>Updated <code>process_document()</code> with intelligent routing</li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Log Output Example</h2>
+        <div class="code">INFO:models.ocr_engine:PDF Analysis: 10 pages | Type: pure_digital | Digital: 10, OCR: 0, Mixed: 0 | Strategy: direct_extraction
+INFO:models.ocr_engine:Pure digital PDF detected - using direct extraction
+INFO:models.ocr_engine:Digital PDF extracted in 0.02s: 10 pages, 24285 chars</div>
+        <p style="color: #a0a0a0; margin-top: 10px;">
+            For mixed PDFs, the log shows the breakdown of page types and processing strategy.
+        </p>
+    </div>
+</body>
+</html>

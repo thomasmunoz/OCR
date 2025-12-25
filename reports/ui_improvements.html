@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline - UI Improvements</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #0f0f1a; color: #e0e0e0; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { color: #7c3aed; border-bottom: 2px solid #7c3aed; padding-bottom: 8px; margin-bottom: 16px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .code { background: #1a1a2e; padding: 15px; border-radius: 8px; font-family: 'Menlo', monospace; overflow-x: auto; margin: 10px 0; font-size: 0.85rem; white-space: pre-wrap; }
+        .highlight { background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #7c3aed; }
+        .feature-badge { display: inline-block; background: linear-gradient(135deg, #10b981, #059669); padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-left: 10px; }
+        .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 20px 0; flex-wrap: wrap; }
+        .flow-step { background: rgba(124, 58, 237, 0.1); border: 2px solid #7c3aed; border-radius: 8px; padding: 15px 20px; text-align: center; }
+        .flow-arrow { color: #7c3aed; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="highlight">
+        <h1>UI Improvements <span class="feature-badge">COMPLETED</span></h1>
+        <p>December 25, 2025 - Dashboard Enhancements</p>
+    </div>
+
+    <div class="card">
+        <h2>Features Implemented</h2>
+        <table>
+            <tr><th>Feature</th><th>Status</th><th>Description</th></tr>
+            <tr>
+                <td>Original Filename Display</td>
+                <td class="success">Completed</td>
+                <td>FILE column shows original filename instead of hashed name</td>
+            </tr>
+            <tr>
+                <td>Clickable File Links</td>
+                <td class="success">Completed</td>
+                <td>Click filename to open PDF in new browser tab</td>
+            </tr>
+            <tr>
+                <td>Inline PDF Viewing</td>
+                <td class="success">Completed</td>
+                <td>PDFs display directly in browser (not downloaded)</td>
+            </tr>
+            <tr>
+                <td>Raw Text Button</td>
+                <td class="success">Completed</td>
+                <td>Shows extracted OCR/text content</td>
+            </tr>
+            <tr>
+                <td>Result JSON Button</td>
+                <td class="success">Completed</td>
+                <td>Shows organized JSON output</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>File Viewing Flow</h2>
+        <div class="flow-diagram">
+            <div class="flow-step">Click Filename<br>in Recent Jobs</div>
+            <span class="flow-arrow">&#8594;</span>
+            <div class="flow-step">/api/files/{job_id}</div>
+            <span class="flow-arrow">&#8594;</span>
+            <div class="flow-step">Content-Disposition:<br>inline</div>
+            <span class="flow-arrow">&#8594;</span>
+            <div class="flow-step">PDF Opens in<br>Browser Tab</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Implementation Details</h2>
+        <h3>1. Original Filename Storage</h3>
+        <div class="code">job = pipeline.submit(
+    str(saved_path),
+    priority,
+    metadata={"original_filename": file.filename}
+)</div>
+
+        <h3>2. File Serving Endpoint</h3>
+        <div class="code">@app.get("/api/files/{job_id}")
+async def serve_file(job_id: str):
+    job = pipeline.queue.get_job(job_id)
+    original_filename = job.metadata.get("original_filename", job.file_name)
+
+    return FileResponse(
+        path=str(file_path),
+        media_type='application/pdf',
+        headers={
+            "Content-Disposition": f"inline; filename=\"{original_filename}\""
+        }
+    )</div>
+
+        <h3>3. UI Display with Clickable Link</h3>
+        <div class="code">const displayName = job.metadata?.original_filename || job.file_name;
+const truncatedName = displayName.length > 40 ? displayName.substring(0, 37) + '...' : displayName;
+
+return `
+&lt;td&gt;
+    &lt;a href="/api/files/${job.job_id}" target="_blank"
+       title="${displayName}" style="color: #7c3aed;"&gt;
+        ${truncatedName}
+    &lt;/a&gt;
+&lt;/td&gt;`;</div>
+    </div>
+
+    <div class="card">
+        <h2>Verification Results</h2>
+        <table>
+            <tr><th>Test</th><th>Method</th><th>Result</th></tr>
+            <tr>
+                <td>File endpoint</td>
+                <td>GET /api/files/{job_id}</td>
+                <td class="success">HTTP 200 OK</td>
+            </tr>
+            <tr>
+                <td>Content-Type</td>
+                <td>Response header</td>
+                <td class="success">application/pdf</td>
+            </tr>
+            <tr>
+                <td>Content-Disposition</td>
+                <td>Response header</td>
+                <td class="success">inline; filename="ClientAgreement.pdf"</td>
+            </tr>
+            <tr>
+                <td>Metadata storage</td>
+                <td>Job JSON</td>
+                <td class="success">original_filename preserved</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>HTTP Response Headers</h2>
+        <div class="code">HTTP/1.1 200 OK
+content-disposition: inline; filename="ClientAgreement.pdf"
+content-type: application/pdf
+accept-ranges: bytes
+content-length: 135500</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-color: rgba(16,185,129,0.3);">
+        <h2 style="color: #10b981; border-color: #10b981;">Files Modified</h2>
+        <ul style="line-height: 2;">
+            <li class="success"><code>api/server.py</code> - Added file serving endpoint and UI improvements</li>
+            <li class="success"><code>models/ocr_engine.py</code> - Per-page PDF analysis (previous session)</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>User Experience</h2>
+        <table>
+            <tr><th>Before</th><th>After</th></tr>
+            <tr>
+                <td class="error">Hashed filename (26b89066.pdf)</td>
+                <td class="success">Original filename (ClientAgreement.pdf)</td>
+            </tr>
+            <tr>
+                <td class="error">No way to view uploaded file</td>
+                <td class="success">Clickable link opens in new tab</td>
+            </tr>
+            <tr>
+                <td class="error">PDF would download</td>
+                <td class="success">PDF displays inline in browser</td>
+            </tr>
+            <tr>
+                <td class="error">Raw button showed empty</td>
+                <td class="success">Raw button shows full_text content</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline - Enhanced JSON Output Schema</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1100px; margin: 40px auto; padding: 20px; background: #0f0f1a; color: #e0e0e0; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; margin-bottom: 16px; }
+        h3 { color: #fbbf24; margin-top: 20px; }
+        .success { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        .code { background: #1a1a2e; padding: 15px; border-radius: 8px; font-family: 'Menlo', monospace; overflow-x: auto; margin: 10px 0; font-size: 0.85rem; white-space: pre-wrap; }
+        .highlight { background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #f59e0b; }
+        .oracle-badge { display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-left: 10px; }
+        .new-badge { display: inline-block; background: linear-gradient(135deg, #10b981, #059669); padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 0.8rem; margin-left: 10px; }
+        .section-header { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 10px 15px; margin: 20px 0; }
+        .json-key { color: #f59e0b; }
+        .json-string { color: #10b981; }
+        .json-number { color: #3b82f6; }
+        .json-bool { color: #ec4899; }
+        .json-comment { color: #6b7280; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="highlight">
+        <h1>Enhanced JSON Output Schema <span class="oracle-badge">ORACLE PROTOCOL</span></h1>
+        <p>December 25, 2025 - Comprehensive Document Processing Output Format</p>
+    </div>
+
+    <div class="card">
+        <h2>Schema Overview</h2>
+        <p>The enhanced JSON output captures ALL aspects of document processing:</p>
+        <table>
+            <tr><th>Section</th><th>Purpose</th><th>Status</th></tr>
+            <tr>
+                <td>Document Metadata</td>
+                <td>Processing info, models used, timestamps</td>
+                <td class="success">Enhanced</td>
+            </tr>
+            <tr>
+                <td>Page-Level Analysis</td>
+                <td>Source type, extraction method, language per page</td>
+                <td class="new-badge">NEW</td>
+            </tr>
+            <tr>
+                <td>Signature Detection</td>
+                <td>Digital (PKI), handwritten, or none</td>
+                <td class="new-badge">NEW</td>
+            </tr>
+            <tr>
+                <td>Language Detection</td>
+                <td>Per-page and document-level language</td>
+                <td class="new-badge">NEW</td>
+            </tr>
+            <tr>
+                <td>Content Structure</td>
+                <td>Text blocks, tables, entities</td>
+                <td class="success">Enhanced</td>
+            </tr>
+            <tr>
+                <td>Quality Metrics</td>
+                <td>Confidence scores, warnings, validation</td>
+                <td class="success">Enhanced</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Complete JSON Schema</h2>
+        <div class="code"><span class="json-comment">// IDP Pipeline Enhanced Output Schema v2.0</span>
+{
+    <span class="json-key">"schema_version"</span>: <span class="json-string">"2.0"</span>,
+    <span class="json-key">"job_id"</span>: <span class="json-string">"uuid"</span>,
+    <span class="json-key">"processing_timestamp"</span>: <span class="json-string">"2025-12-25T12:00:00Z"</span>,
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// DOCUMENT METADATA</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"document"</span>: {
+        <span class="json-key">"source_file"</span>: {
+            <span class="json-key">"original_filename"</span>: <span class="json-string">"Contract_Agreement.pdf"</span>,
+            <span class="json-key">"stored_filename"</span>: <span class="json-string">"a822d70b.pdf"</span>,
+            <span class="json-key">"file_format"</span>: <span class="json-string">"pdf"</span>,
+            <span class="json-key">"file_size_bytes"</span>: <span class="json-number">135500</span>,
+            <span class="json-key">"file_hash_sha256"</span>: <span class="json-string">"1bfa1041f8bb..."</span>,
+            <span class="json-key">"mime_type"</span>: <span class="json-string">"application/pdf"</span>
+        },
+        <span class="json-key">"document_type"</span>: <span class="json-string">"contract"</span>,
+        <span class="json-key">"document_structure"</span>: <span class="json-string">"pure_digital"</span>, <span class="json-comment">// pure_digital | pure_scanned | mixed</span>
+        <span class="json-key">"total_pages"</span>: <span class="json-number">10</span>,
+        <span class="json-key">"total_characters"</span>: <span class="json-number">24285</span>,
+        <span class="json-key">"total_words"</span>: <span class="json-number">4521</span>,
+        <span class="json-key">"primary_language"</span>: <span class="json-string">"en"</span>,
+        <span class="json-key">"languages_detected"</span>: [<span class="json-string">"en"</span>, <span class="json-string">"fr"</span>]
+    },
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// SIGNATURE INFORMATION (NEW!)</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"signatures"</span>: {
+        <span class="json-key">"status"</span>: <span class="json-string">"digitally_signed"</span>, <span class="json-comment">// digitally_signed | manually_signed | unsigned | both</span>
+        <span class="json-key">"has_digital_signature"</span>: <span class="json-bool">true</span>,
+        <span class="json-key">"has_handwritten_signature"</span>: <span class="json-bool">false</span>,
+        <span class="json-key">"total_signature_count"</span>: <span class="json-number">2</span>,
+        
+        <span class="json-key">"digital_signatures"</span>: [
+            {
+                <span class="json-key">"signer_name"</span>: <span class="json-string">"Eric Gareau"</span>,
+                <span class="json-key">"signer_email"</span>: <span class="json-string">"eric.gareau@company.com"</span>,
+                <span class="json-key">"signing_time"</span>: <span class="json-string">"2024-03-15T14:30:00Z"</span>,
+                <span class="json-key">"certificate_issuer"</span>: <span class="json-string">"DigiCert"</span>,
+                <span class="json-key">"certificate_valid_from"</span>: <span class="json-string">"2024-01-01"</span>,
+                <span class="json-key">"certificate_valid_to"</span>: <span class="json-string">"2026-12-31"</span>,
+                <span class="json-key">"signature_valid"</span>: <span class="json-bool">true</span>,
+                <span class="json-key">"document_modified_after_signing"</span>: <span class="json-bool">false</span>,
+                <span class="json-key">"page"</span>: <span class="json-number">10</span>,
+                <span class="json-key">"field_name"</span>: <span class="json-string">"Signature1"</span>
+            }
+        ],
+        
+        <span class="json-key">"handwritten_signatures"</span>: [
+            {
+                <span class="json-key">"page"</span>: <span class="json-number">7</span>,
+                <span class="json-key">"location"</span>: {
+                    <span class="json-key">"x"</span>: <span class="json-number">350</span>,
+                    <span class="json-key">"y"</span>: <span class="json-number">680</span>,
+                    <span class="json-key">"width"</span>: <span class="json-number">150</span>,
+                    <span class="json-key">"height"</span>: <span class="json-number">40</span>
+                },
+                <span class="json-key">"detection_confidence"</span>: <span class="json-number">0.87</span>,
+                <span class="json-key">"associated_text"</span>: <span class="json-string">"Signature of Authorized Representative"</span>,
+                <span class="json-key">"signer_name_nearby"</span>: <span class="json-string">"John Smith"</span>
+            }
+        ]
+    },
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// PAGE-LEVEL ANALYSIS (NEW!)</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"pages"</span>: [
+        {
+            <span class="json-key">"page_number"</span>: <span class="json-number">1</span>,
+            <span class="json-key">"dimensions"</span>: {
+                <span class="json-key">"width"</span>: <span class="json-number">595.28</span>,
+                <span class="json-key">"height"</span>: <span class="json-number">841.89</span>,
+                <span class="json-key">"unit"</span>: <span class="json-string">"pt"</span>
+            },
+            
+            <span class="json-comment">// Source & Extraction Info</span>
+            <span class="json-key">"source"</span>: {
+                <span class="json-key">"type"</span>: <span class="json-string">"digital_text"</span>, <span class="json-comment">// digital_text | scanned_image | mixed_content | image_with_text</span>
+                <span class="json-key">"extraction_method"</span>: <span class="json-string">"direct"</span>, <span class="json-comment">// direct | ocr | hybrid</span>
+                <span class="json-key">"ocr_model_used"</span>: <span class="json-string">null</span>, <span class="json-comment">// null for digital, model name for OCR</span>
+                <span class="json-key">"has_text_layer"</span>: <span class="json-bool">true</span>,
+                <span class="json-key">"has_images"</span>: <span class="json-bool">false</span>,
+                <span class="json-key">"image_coverage_percent"</span>: <span class="json-number">0</span>
+            },
+            
+            <span class="json-comment">// Language Detection</span>
+            <span class="json-key">"language"</span>: {
+                <span class="json-key">"detected"</span>: <span class="json-string">"en"</span>,
+                <span class="json-key">"confidence"</span>: <span class="json-number">0.98</span>,
+                <span class="json-key">"alternate_languages"</span>: [], <span class="json-comment">// If multilingual page</span>
+                <span class="json-key">"script"</span>: <span class="json-string">"Latin"</span>
+            },
+            
+            <span class="json-comment">// Content Statistics</span>
+            <span class="json-key">"statistics"</span>: {
+                <span class="json-key">"char_count"</span>: <span class="json-number">2406</span>,
+                <span class="json-key">"word_count"</span>: <span class="json-number">452</span>,
+                <span class="json-key">"line_count"</span>: <span class="json-number">38</span>,
+                <span class="json-key">"paragraph_count"</span>: <span class="json-number">5</span>,
+                <span class="json-key">"table_count"</span>: <span class="json-number">0</span>,
+                <span class="json-key">"image_count"</span>: <span class="json-number">0</span>,
+                <span class="json-key">"form_field_count"</span>: <span class="json-number">0</span>
+            },
+            
+            <span class="json-comment">// Quality Metrics</span>
+            <span class="json-key">"quality"</span>: {
+                <span class="json-key">"extraction_confidence"</span>: <span class="json-number">0.99</span>,
+                <span class="json-key">"ocr_confidence"</span>: <span class="json-string">null</span>, <span class="json-comment">// Only for OCR pages</span>
+                <span class="json-key">"text_clarity"</span>: <span class="json-string">"excellent"</span>, <span class="json-comment">// excellent | good | fair | poor</span>
+                <span class="json-key">"issues"</span>: []
+            },
+            
+            <span class="json-comment">// Signatures on this page</span>
+            <span class="json-key">"has_signature"</span>: <span class="json-bool">false</span>,
+            <span class="json-key">"signature_type"</span>: <span class="json-string">null</span>,
+            
+            <span class="json-comment">// Extracted Content</span>
+            <span class="json-key">"content"</span>: {
+                <span class="json-key">"raw_text"</span>: <span class="json-string">"SERVICE AGREEMENT BETWEEN:\nAnteco Systems SL..."</span>,
+                <span class="json-key">"blocks"</span>: [
+                    {
+                        <span class="json-key">"type"</span>: <span class="json-string">"heading"</span>,
+                        <span class="json-key">"text"</span>: <span class="json-string">"SERVICE AGREEMENT"</span>,
+                        <span class="json-key">"confidence"</span>: <span class="json-number">0.99</span>
+                    },
+                    {
+                        <span class="json-key">"type"</span>: <span class="json-string">"paragraph"</span>,
+                        <span class="json-key">"text"</span>: <span class="json-string">"BETWEEN: Anteco Systems SL..."</span>,
+                        <span class="json-key">"confidence"</span>: <span class="json-number">0.98</span>
+                    }
+                ],
+                <span class="json-key">"tables"</span>: [],
+                <span class="json-key">"forms"</span>: []
+            }
+        }
+    ],
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// PROCESSING PIPELINE INFO</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"processing"</span>: {
+        <span class="json-key">"pipeline_version"</span>: <span class="json-string">"1.0.0"</span>,
+        <span class="json-key">"ocr_model"</span>: {
+            <span class="json-key">"name"</span>: <span class="json-string">"TrOCR-Large-Printed"</span>,
+            <span class="json-key">"repository"</span>: <span class="json-string">"microsoft/trocr-large-printed"</span>,
+            <span class="json-key">"pages_processed"</span>: <span class="json-number">0</span> <span class="json-comment">// 0 for pure digital</span>
+        },
+        <span class="json-key">"organization_model"</span>: {
+            <span class="json-key">"name"</span>: <span class="json-string">"TinyLlama-1.1B-Chat"</span>,
+            <span class="json-key">"repository"</span>: <span class="json-string">"TinyLlama/TinyLlama-1.1B-Chat-v1.0"</span>
+        },
+        <span class="json-key">"timing"</span>: {
+            <span class="json-key">"extraction_seconds"</span>: <span class="json-number">0.02</span>,
+            <span class="json-key">"organization_seconds"</span>: <span class="json-number">24.5</span>,
+            <span class="json-key">"total_seconds"</span>: <span class="json-number">24.52</span>
+        },
+        <span class="json-key">"strategy"</span>: <span class="json-string">"direct_extraction"</span> <span class="json-comment">// direct_extraction | full_ocr | hybrid_per_page</span>
+    },
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// STRUCTURED EXTRACTED DATA</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"extracted_data"</span>: {
+        <span class="json-key">"summary"</span>: <span class="json-string">"Service agreement between AnyTech365 and Avanquest..."</span>,
+        
+        <span class="json-key">"entities"</span>: {
+            <span class="json-key">"parties"</span>: [
+                {
+                    <span class="json-key">"name"</span>: <span class="json-string">"Anteco Systems SL / AnyTech365"</span>,
+                    <span class="json-key">"role"</span>: <span class="json-string">"provider"</span>,
+                    <span class="json-key">"address"</span>: <span class="json-string">"Edificio Los Pinos, Marbella, Spain"</span>,
+                    <span class="json-key">"representative"</span>: <span class="json-string">"Miguel Angel Casales, CFO"</span>
+                },
+                {
+                    <span class="json-key">"name"</span>: <span class="json-string">"Avanquest Software SAS"</span>,
+                    <span class="json-key">"role"</span>: <span class="json-string">"client"</span>,
+                    <span class="json-key">"address"</span>: <span class="json-string">"Immeuble Adamas, Courbevoie, France"</span>,
+                    <span class="json-key">"representative"</span>: <span class="json-string">"Eric Gareau, CEO"</span>
+                }
+            ],
+            <span class="json-key">"dates"</span>: [
+                {<span class="json-key">"type"</span>: <span class="json-string">"effective_date"</span>, <span class="json-key">"value"</span>: <span class="json-string">"2024-01-01"</span>, <span class="json-key">"page"</span>: <span class="json-number">1</span>},
+                {<span class="json-key">"type"</span>: <span class="json-string">"expiry_date"</span>, <span class="json-key">"value"</span>: <span class="json-string">"2025-12-31"</span>, <span class="json-key">"page"</span>: <span class="json-number">8</span>}
+            ],
+            <span class="json-key">"amounts"</span>: [
+                {<span class="json-key">"type"</span>: <span class="json-string">"monthly_fee"</span>, <span class="json-key">"value"</span>: <span class="json-number">5000</span>, <span class="json-key">"currency"</span>: <span class="json-string">"EUR"</span>, <span class="json-key">"page"</span>: <span class="json-number">4</span>}
+            ]
+        },
+        
+        <span class="json-key">"key_terms"</span>: {
+            <span class="json-key">"duration"</span>: <span class="json-string">"24 months"</span>,
+            <span class="json-key">"payment_terms"</span>: <span class="json-string">"Net 30"</span>,
+            <span class="json-key">"termination_notice"</span>: <span class="json-string">"90 days"</span>
+        },
+        
+        <span class="json-key">"tables"</span>: [
+            {
+                <span class="json-key">"title"</span>: <span class="json-string">"Pricing Schedule"</span>,
+                <span class="json-key">"page"</span>: <span class="json-number">4</span>,
+                <span class="json-key">"rows"</span>: <span class="json-number">5</span>,
+                <span class="json-key">"columns"</span>: <span class="json-number">3</span>,
+                <span class="json-key">"data"</span>: [[<span class="json-string">"Service"</span>, <span class="json-string">"Unit"</span>, <span class="json-string">"Price"</span>], ...]
+            }
+        ]
+    },
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// QUALITY & VALIDATION</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"quality"</span>: {
+        <span class="json-key">"overall_confidence"</span>: <span class="json-number">0.99</span>,
+        <span class="json-key">"extraction_completeness"</span>: <span class="json-number">0.95</span>, <span class="json-comment">// % of text structured</span>
+        <span class="json-key">"confidence_distribution"</span>: {
+            <span class="json-key">"certain_95_100"</span>: <span class="json-number">450</span>,
+            <span class="json-key">"high_80_94"</span>: <span class="json-number">12</span>,
+            <span class="json-key">"medium_60_79"</span>: <span class="json-number">0</span>,
+            <span class="json-key">"low_40_59"</span>: <span class="json-number">0</span>,
+            <span class="json-key">"uncertain_below_40"</span>: <span class="json-number">0</span>
+        },
+        <span class="json-key">"low_confidence_segments"</span>: [],
+        <span class="json-key">"warnings"</span>: [],
+        <span class="json-key">"errors"</span>: []
+    },
+
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-comment">// FULL TEXT BACKUP</span>
+    <span class="json-comment">// ═══════════════════════════════════════════════════════════════</span>
+    <span class="json-key">"full_text"</span>: <span class="json-string">"SERVICE AGREEMENT BETWEEN:\nAnteco Systems SL / AnyTech365..."</span>
+}</div>
+    </div>
+
+    <div class="card">
+        <h2>Signature Detection Strategy</h2>
+        
+        <h3>1. Digital Signatures (PKI-Based)</h3>
+        <p>Detected using PyMuPDF's signature API:</p>
+        <div class="code">import fitz
+
+doc = fitz.open(pdf_path)
+
+# Check for digital signatures
+if doc.is_signed:
+    for sig_field in doc.get_signature_fields():
+        # Extract certificate info
+        signer_name = sig_field.get("name")
+        signing_time = sig_field.get("signing_time")
+        certificate = sig_field.get("certificate")
+        # Validate signature
+        is_valid = doc.verify_signature(sig_field)</div>
+
+        <h3>2. Handwritten Signatures</h3>
+        <p>Detection approach using image analysis:</p>
+        <table>
+            <tr><th>Method</th><th>Description</th><th>Confidence</th></tr>
+            <tr>
+                <td>Text Pattern</td>
+                <td>Look for "Signature:", "Signed by:", "Sign here" text labels</td>
+                <td class="warning">Medium</td>
+            </tr>
+            <tr>
+                <td>Image Analysis</td>
+                <td>Detect isolated cursive strokes in signature boxes</td>
+                <td class="success">High</td>
+            </tr>
+            <tr>
+                <td>Zone Detection</td>
+                <td>Common signature locations (bottom of page, after terms)</td>
+                <td class="warning">Medium</td>
+            </tr>
+            <tr>
+                <td>ML Model</td>
+                <td>Trained signature detection CNN (optional)</td>
+                <td class="success">High</td>
+            </tr>
+        </table>
+        
+        <div class="code"># Handwritten signature detection approach
+def detect_handwritten_signatures(page):
+    signatures = []
+    
+    # 1. Find signature-related text
+    signature_labels = page.search_for("signature")
+    signature_labels += page.search_for("signed by")
+    
+    # 2. Look for images near signature labels
+    for label in signature_labels:
+        nearby_images = page.get_images_in_rect(
+            expand_rect(label, margin=100)
+        )
+        for img in nearby_images:
+            if is_signature_like(img):
+                signatures.append({
+                    "page": page.number,
+                    "location": img.rect,
+                    "confidence": analyze_signature_confidence(img)
+                })
+    
+    return signatures</div>
+    </div>
+
+    <div class="card">
+        <h2>Language Detection Per Page</h2>
+        <p>Using <code>langdetect</code> or <code>fasttext</code> for each page's text:</p>
+        <div class="code">from langdetect import detect, detect_langs
+# Or: import fasttext
+
+def detect_page_language(text: str) -> dict:
+    """Detect language of page text"""
+    if len(text.strip()) < 20:
+        return {"detected": "unknown", "confidence": 0.0}
+    
+    try:
+        # Get all possible languages with probabilities
+        langs = detect_langs(text)
+        
+        primary = langs[0]
+        alternates = [
+            {"lang": l.lang, "confidence": l.prob}
+            for l in langs[1:]
+            if l.prob > 0.1
+        ]
+        
+        return {
+            "detected": primary.lang,
+            "confidence": primary.prob,
+            "alternate_languages": alternates,
+            "script": detect_script(text)
+        }
+    except:
+        return {"detected": "unknown", "confidence": 0.0}</div>
+    </div>
+
+    <div class="card">
+        <h2>Source Type Detection</h2>
+        <p>Already implemented in the per-page analysis system:</p>
+        <table>
+            <tr><th>Source Type</th><th>Detection Criteria</th><th>Extraction Method</th></tr>
+            <tr>
+                <td class="success">digital_text</td>
+                <td>Text layer exists, >50 chars/page, <10% image coverage</td>
+                <td>Direct extraction (PyMuPDF)</td>
+            </tr>
+            <tr>
+                <td class="error">scanned_image</td>
+                <td>No text layer OR <10 chars/page, >80% image coverage</td>
+                <td>Full OCR (TrOCR/Qwen)</td>
+            </tr>
+            <tr>
+                <td class="warning">mixed_content</td>
+                <td>Has text layer AND significant images with potential text</td>
+                <td>Hybrid (direct + OCR on images)</td>
+            </tr>
+            <tr>
+                <td class="info">image_with_text</td>
+                <td>Embedded images detected that may contain text</td>
+                <td>OCR on detected images only</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Implementation Priority</h2>
+        <table>
+            <tr><th>Priority</th><th>Feature</th><th>Effort</th><th>Value</th></tr>
+            <tr>
+                <td>1</td>
+                <td class="success">Per-page source type in output</td>
+                <td>Low (already collected)</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td class="success">Language detection per page</td>
+                <td>Low (add langdetect)</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td class="warning">Digital signature extraction</td>
+                <td>Medium (PyMuPDF API)</td>
+                <td>Very High</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td class="warning">Handwritten signature detection</td>
+                <td>Medium-High (image analysis)</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td class="info">Enhanced JSON structure</td>
+                <td>Low (update dataclasses)</td>
+                <td>High</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05)); border-color: rgba(16,185,129,0.3);">
+        <h2 style="color: #10b981; border-color: #10b981;">Oracle Recommendation Summary</h2>
+        <ul style="line-height: 2.2;">
+            <li class="success"><strong>Per-Page Metadata:</strong> Include source_type, extraction_method, language, statistics for each page</li>
+            <li class="success"><strong>Signature Status:</strong> Three-tier detection - digital (PKI), handwritten, unsigned</li>
+            <li class="success"><strong>Document Header:</strong> Schema version, processing info, overall document metadata</li>
+            <li class="success"><strong>Language Detection:</strong> Per-page using langdetect/fasttext with confidence scores</li>
+            <li class="success"><strong>Quality Metrics:</strong> Confidence distribution, warnings, issues per page</li>
+            <li class="success"><strong>Backwards Compatibility:</strong> Keep full_text at root level for simple access</li>
+            <li class="success"><strong>Extensibility:</strong> Use objects for complex fields to allow future additions</li>
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Files to Modify</h2>
+        <table>
+            <tr><th>File</th><th>Changes</th></tr>
+            <tr>
+                <td><code>config/intermediate_format.py</code></td>
+                <td>Add SignatureInfo, PageMetadata, LanguageInfo dataclasses</td>
+            </tr>
+            <tr>
+                <td><code>models/ocr_engine.py</code></td>
+                <td>Add signature detection, language detection per page</td>
+            </tr>
+            <tr>
+                <td><code>models/organizer_engine.py</code></td>
+                <td>Output enhanced JSON structure</td>
+            </tr>
+            <tr>
+                <td><code>requirements.txt</code></td>
+                <td>Add langdetect or fasttext-langdetect</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

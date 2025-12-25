@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwen OCR - Complete Workflow Explanation</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: #f8f9fa;
+            padding: 15px 40px;
+            border-bottom: 2px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        nav a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        section {
+            margin-bottom: 60px;
+        }
+
+        section h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        section h3 {
+            color: #764ba2;
+            font-size: 1.5em;
+            margin: 30px 0 15px 0;
+        }
+
+        .description {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .mermaid {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-blue {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+
+        .badge-green {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .badge-orange {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .badge-purple {
+            background: #f3e5f5;
+            color: #9c27b0;
+        }
+
+        footer {
+            background: #282c34;
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 0;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Qwen OCR - Complete Workflow</h1>
+            <p>Visual explanation of the OCR extraction system using Qwen2-VL-2B-OCR</p>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#main-workflow">Main Workflow</a></li>
+                <li><a href="#file-processing">File Processing</a></li>
+                <li><a href="#extraction-modes">Extraction Modes</a></li>
+                <li><a href="#entity-extraction">Entity Extraction</a></li>
+                <li><a href="#data-flow">Data Flow</a></li>
+                <li><a href="#comparison">Comparison</a></li>
+            </ul>
+        </nav>
+
+        <div class="content">
+            <!-- OVERVIEW -->
+            <section id="overview">
+                <h2>📋 System Overview</h2>
+                <div class="description">
+                    <p><strong>Qwen OCR</strong> is a comprehensive document information extraction system powered by the Qwen2-VL-2B-OCR AI model. It can extract text, company information, contacts, dates, amounts, and much more from various document formats.</p>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h4>🎯 Purpose</h4>
+                        <p>Extract maximum information from documents automatically using AI-powered OCR</p>
+                    </div>
+                    <div class="card">
+                        <h4>🤖 AI Model</h4>
+                        <p>Qwen2-VL-2B-OCR - Vision-Language model with 2B parameters, supports 60+ languages</p>
+                    </div>
+                    <div class="card">
+                        <h4>📄 Supported Formats</h4>
+                        <p>PDF, Images (PNG, JPG, JPEG, TIFF), HTML/XHTML files</p>
+                    </div>
+                    <div class="card">
+                        <h4>📊 Output</h4>
+                        <p>Text, JSON, XML formats with 10-100+ extracted data points</p>
+                    </div>
+                </div>
+
+                <h3>Key Features</h3>
+                <div class="success-box">
+                    <strong>✅ Two Extraction Modes:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li><strong>Basic Mode:</strong> Fast extraction of text + company info (10 fields)</li>
+                        <li><strong>Maximum Mode:</strong> Complete extraction of everything (100+ fields)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- MAIN WORKFLOW -->
+            <section id="main-workflow">
+                <h2>🔄 Main Workflow - High Level</h2>
+                <div class="description">
+                    <p>This diagram shows the complete journey from document input to final extracted information.</p>
+                </div>
+
+                <div class="mermaid">
+graph TB
+    Start([📁 User Provides Document]) --> Input[Document Input]
+    Input --> FileCheck{Check File Type}
+
+    FileCheck -->|PDF| PDF[PDF Processing]
+    FileCheck -->|Image| IMG[Image Processing]
+    FileCheck -->|HTML| HTML[HTML Processing]
+    FileCheck -->|Unsupported| Error[❌ Error: Unsupported Format]
+
+    PDF --> LoadModel[Load Qwen2-VL-2B-OCR Model]
+    IMG --> LoadModel
+    HTML --> LoadModel
+
+    LoadModel --> OCR[🤖 OCR Extraction]
+    OCR --> RawText[Raw Text Output]
+
+    RawText --> Mode{Extraction Mode?}
+
+    Mode -->|Basic| BasicExtract[Extract Company Info<br/>8 fields]
+    Mode -->|Maximum| MaxExtract[Extract Everything<br/>100+ fields]
+
+    BasicExtract --> Format1{Output Format?}
+    MaxExtract --> Format2{Output Format?}
+
+    Format1 -->|JSON| JSON1[JSON Output]
+    Format1 -->|JSON-AI| JSONAI1[JSON-AI Compact]
+    Format1 -->|XML| XML1[XML Output]
+
+    Format2 -->|JSON| JSON2[Complete JSON<br/>11 categories]
+    Format2 -->|Human| Human[Human-Readable<br/>Summary]
+
+    JSON1 --> End([✅ Results Delivered])
+    JSONAI1 --> End
+    XML1 --> End
+    JSON2 --> End
+    Human --> End
+    Error --> End
+
+    style Start fill:#e3f2fd
+    style End fill:#e8f5e9
+    style Error fill:#ffebee
+    style LoadModel fill:#fff3e0
+    style OCR fill:#f3e5f5
+    style BasicExtract fill:#e1f5fe
+    style MaxExtract fill:#c8e6c9
+                </div>
+            </section>
+
+            <!-- FILE PROCESSING -->
+            <section id="file-processing">
+                <h2>📂 File Type Processing</h2>
+                <div class="description">
+                    <p>Different file types are processed differently. Here's how each type is handled:</p>
+                </div>
+
+                <h3>PDF Processing Pipeline</h3>
+                <div class="mermaid">
+graph LR
+    PDF[📄 PDF Document] --> OpenPDF[Open with PyMuPDF]
+    OpenPDF --> Meta[Extract PDF Metadata<br/>Title, Author, Pages, etc.]
+    OpenPDF --> Pages[Iterate Through Pages]
+
+    Pages --> Page1[Page 1]
+    Pages --> Page2[Page 2]
+    Pages --> PageN[Page N]
+
+    Page1 --> Convert1[Convert to Image]
+    Page2 --> Convert2[Convert to Image]
+    PageN --> ConvertN[Convert to Image]
+
+    Convert1 --> OCR1[OCR Extraction]
+    Convert2 --> OCR2[OCR Extraction]
+    ConvertN --> OCRN[OCR Extraction]
+
+    OCR1 --> Text1[Page 1 Text]
+    OCR2 --> Text2[Page 2 Text]
+    OCRN --> TextN[Page N Text]
+
+    Text1 --> Combine[Combine All Pages]
+    Text2 --> Combine
+    TextN --> Combine
+
+    Meta --> Output[📊 Output with Metadata]
+    Combine --> Output
+
+    style PDF fill:#e3f2fd
+    style Output fill:#e8f5e9
+                </div>
+
+                <h3>Image Processing Pipeline</h3>
+                <div class="mermaid">
+graph LR
+    IMG[🖼️ Image File] --> OpenIMG[Open with PIL]
+    OpenIMG --> Meta[Extract Image Metadata<br/>Width, Height, Format]
+    OpenIMG --> Convert[Convert to RGB]
+
+    Convert --> Prepare[Prepare for Model<br/>Messages + Image]
+    Prepare --> Process[Process with Model<br/>Tokenize + Encode]
+
+    Process --> Generate[Generate Text<br/>Max 4096 tokens]
+    Generate --> Decode[Decode Output]
+
+    Decode --> Text[Extracted Text]
+    Meta --> Output[📊 Output with Metadata]
+    Text --> Output
+
+    style IMG fill:#e3f2fd
+    style Output fill:#e8f5e9
+                </div>
+
+                <h3>HTML Processing Pipeline</h3>
+                <div class="mermaid">
+graph LR
+    HTML[🌐 HTML File] --> Read[Read File Content]
+    Read --> Clean[Clean HTML<br/>Remove scripts/styles]
+
+    Clean --> Extract[Extract Text Content]
+    Extract --> Text[Plain Text]
+
+    Read --> Structure[Extract Structure<br/>Title, Meta, Headings]
+    Structure --> Meta[HTML Metadata]
+
+    Read --> Tables[Extract HTML Tables]
+    Tables --> TableData[Table Structure]
+
+    Read --> Links[Extract Links & Images]
+    Links --> LinkData[URLs & Images]
+
+    Text --> Output[📊 Output]
+    Meta --> Output
+    TableData --> Output
+    LinkData --> Output
+
+    style HTML fill:#e3f2fd
+    style Output fill:#e8f5e9
+                </div>
+            </section>
+
+            <!-- EXTRACTION MODES -->
+            <section id="extraction-modes">
+                <h2>⚙️ Extraction Modes Comparison</h2>
+
+                <div class="grid">
+                    <div class="card">
+                        <h4>🔷 Basic Mode</h4>
+                        <p><strong>Tool:</strong> qwen_extract.py</p>
+                        <p><strong>Speed:</strong> Fast (~10s)</p>
+                        <p><strong>Output:</strong> 10 fields</p>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-blue">Text</span>
+                            <span class="badge badge-blue">Company Info</span>
+                            <span class="badge badge-blue">JSON/XML</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>💎 Maximum Mode</h4>
+                        <p><strong>Tool:</strong> qwen_extract_max.py</p>
+                        <p><strong>Speed:</strong> +50% (~15s)</p>
+                        <p><strong>Output:</strong> 100+ fields</p>
+                        <div style="margin-top: 10px;">
+                            <span class="badge badge-green">Everything</span>
+                            <span class="badge badge-green">11 Categories</span>
+                            <span class="badge badge-green">Complete Analysis</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Mode Selection Flow</h3>
+                <div class="mermaid">
+graph TD
+    Start([User Command]) --> Check{Which Tool?}
+
+    Check -->|qwen_extract.py| Basic[BASIC MODE]
+    Check -->|qwen_extract_max.py| Max[MAXIMUM MODE]
+
+    Basic --> BasicFlags{Flags?}
+    BasicFlags -->|--company| ExtractCompany[Extract Company Info]
+    BasicFlags -->|--json| JSONOnly[Return JSON]
+    BasicFlags -->|none| TextOnly[Return Text Only]
+
+    ExtractCompany --> CompanyData[8 Company Fields:<br/>Name, SIREN, Legal Form,<br/>Capital, Address,<br/>Email, Phone, Website]
+
+    Max --> MaxProcess[Extract Everything]
+    MaxProcess --> Categories[11 Categories:<br/>File, Content, Company,<br/>People, Contacts, Dates,<br/>Amounts, Identifiers,<br/>Tables, Analysis, Structure]
+
+    Categories --> MaxFlags{Flags?}
+    MaxFlags -->|--json| MaxJSON[Complete JSON<br/>100+ fields]
+    MaxFlags -->|none| MaxHuman[Human-Readable<br/>Summary]
+
+    CompanyData --> Output1([Output])
+    JSONOnly --> Output1
+    TextOnly --> Output1
+    MaxJSON --> Output2([Output])
+    MaxHuman --> Output2
+
+    style Start fill:#e3f2fd
+    style Basic fill:#e1f5fe
+    style Max fill:#c8e6c9
+    style Output1 fill:#e8f5e9
+    style Output2 fill:#e8f5e9
+                </div>
+            </section>
+
+            <!-- ENTITY EXTRACTION -->
+            <section id="entity-extraction">
+                <h2>🔍 Entity Extraction Process (Maximum Mode)</h2>
+                <div class="description">
+                    <p>In Maximum Mode, the system extracts entities from the raw text using pattern matching and analysis:</p>
+                </div>
+
+                <div class="mermaid">
+graph TB
+    RawText[📄 Raw Extracted Text] --> Entities[Entity Extraction Engine]
+
+    Entities --> Company[🏢 Company Information]
+    Entities --> People[👤 People & Titles]
+    Entities --> Contact[📞 Contact Details]
+    Entities --> Temporal[📅 Dates & Times]
+    Entities --> Financial[💰 Amounts & Numbers]
+    Entities --> Identifiers[🔖 Document Identifiers]
+
+    Company --> C1[Name]
+    Company --> C2[SIREN/SIRET]
+    Company --> C3[Legal Form]
+    Company --> C4[Capital]
+    Company --> C5[VAT Number]
+    Company --> C6[Trade Register]
+
+    People --> P1[Names]
+    People --> P2[Titles/Roles]
+    People --> P3[Context]
+
+    Contact --> CT1[ALL Emails]
+    Contact --> CT2[ALL Phones]
+    Contact --> CT3[ALL Addresses]
+    Contact --> CT4[ALL URLs]
+
+    Temporal --> T1[All Date Formats]
+    Temporal --> T2[Fiscal Years]
+
+    Financial --> F1[Monetary Amounts]
+    Financial --> F2[Integers]
+    Financial --> F3[Decimals]
+    Financial --> F4[Percentages]
+
+    Identifiers --> I1[Invoice Numbers]
+    Identifiers --> I2[Order Numbers]
+    Identifiers --> I3[Reference Codes]
+
+    C1 --> JSON[📊 Structured JSON Output]
+    C2 --> JSON
+    C3 --> JSON
+    C4 --> JSON
+    C5 --> JSON
+    C6 --> JSON
+    P1 --> JSON
+    P2 --> JSON
+    P3 --> JSON
+    CT1 --> JSON
+    CT2 --> JSON
+    CT3 --> JSON
+    CT4 --> JSON
+    T1 --> JSON
+    T2 --> JSON
+    F1 --> JSON
+    F2 --> JSON
+    F3 --> JSON
+    F4 --> JSON
+    I1 --> JSON
+    I2 --> JSON
+    I3 --> JSON
+
+    style RawText fill:#e3f2fd
+    style JSON fill:#e8f5e9
+    style Entities fill:#fff3e0
+                </div>
+
+                <h3>Pattern Matching Examples</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Entity Type</th>
+                            <th>Pattern Examples</th>
+                            <th>Sample Match</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Company Name</strong></td>
+                            <td>Company: [Name], Société: [Name]</td>
+                            <td>"Axway Software S.A."</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SIREN/SIRET</strong></td>
+                            <td>SIREN: [digits], RCS [digits]</td>
+                            <td>"431 717 500"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email</strong></td>
+                            <td>[text]@[domain].[tld]</td>
+                            <td>"contact@company.com"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phone</strong></td>
+                            <td>+33 [digits], 0[1-9] [digits]</td>
+                            <td>"+33 1 47 17 24 24"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount</strong></td>
+                            <td>[digits] €, [digits] EUR</td>
+                            <td>"1 234,56 €"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Date</strong></td>
+                            <td>DD/MM/YYYY, DD-MM-YYYY</td>
+                            <td>"21/12/2024"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- DATA FLOW -->
+            <section id="data-flow">
+                <h2>📊 Complete Data Flow Architecture</h2>
+                <div class="description">
+                    <p>This diagram shows how data flows through the entire system from input to output:</p>
+                </div>
+
+                <div class="mermaid">
+graph TB
+    subgraph Input Layer
+        UserFile[User Document<br/>PDF/Image/HTML]
+        CLI[Command Line<br/>python3 qwen_extract_max.py]
+    end
+
+    subgraph File Processing Layer
+        FileReader[File Reader]
+        PDFProc[PDF Processor]
+        ImgProc[Image Processor]
+        HTMLProc[HTML Processor]
+    end
+
+    subgraph AI Model Layer
+        ModelLoader[Model Loader<br/>Singleton Pattern]
+        Qwen[Qwen2-VL-2B-OCR<br/>4GB Model]
+        Processor[Vision Processor]
+        Generator[Text Generator<br/>Max 4096 tokens]
+    end
+
+    subgraph Extraction Layer
+        TextExtract[Text Extraction]
+        TableExtract[Table Detection]
+        LayoutExtract[Layout Analysis]
+        EntityExtract[Entity Extraction]
+    end
+
+    subgraph Analysis Layer
+        CompanyAnalyzer[Company Analyzer]
+        PeopleAnalyzer[People Analyzer]
+        ContactAnalyzer[Contact Analyzer]
+        DateAnalyzer[Date Analyzer]
+        AmountAnalyzer[Amount Analyzer]
+        DocAnalyzer[Document Analyzer]
+    end
+
+    subgraph Output Layer
+        Formatter[Output Formatter]
+        JSONOut[JSON Output]
+        XMLOut[XML Output]
+        HumanOut[Human-Readable]
+    end
+
+    UserFile --> CLI
+    CLI --> FileReader
+
+    FileReader --> PDFProc
+    FileReader --> ImgProc
+    FileReader --> HTMLProc
+
+    PDFProc --> ModelLoader
+    ImgProc --> ModelLoader
+    HTMLProc --> ModelLoader
+
+    ModelLoader --> Qwen
+    Qwen --> Processor
+    Processor --> Generator
+
+    Generator --> TextExtract
+    TextExtract --> TableExtract
+    TextExtract --> LayoutExtract
+    TextExtract --> EntityExtract
+
+    EntityExtract --> CompanyAnalyzer
+    EntityExtract --> PeopleAnalyzer
+    EntityExtract --> ContactAnalyzer
+    EntityExtract --> DateAnalyzer
+    EntityExtract --> AmountAnalyzer
+    EntityExtract --> DocAnalyzer
+
+    CompanyAnalyzer --> Formatter
+    PeopleAnalyzer --> Formatter
+    ContactAnalyzer --> Formatter
+    DateAnalyzer --> Formatter
+    AmountAnalyzer --> Formatter
+    DocAnalyzer --> Formatter
+    TableExtract --> Formatter
+    LayoutExtract --> Formatter
+
+    Formatter --> JSONOut
+    Formatter --> XMLOut
+    Formatter --> HumanOut
+
+    style Input Layer fill:#e3f2fd
+    style AI Model Layer fill:#fff3e0
+    style Analysis Layer fill:#f3e5f5
+    style Output Layer fill:#e8f5e9
+                </div>
+            </section>
+
+            <!-- COMPARISON -->
+            <section id="comparison">
+                <h2>⚖️ Basic vs Maximum Mode - Detailed Comparison</h2>
+
+                <div class="mermaid">
+graph LR
+    subgraph Basic Mode Flow
+        B1[Input Document] --> B2[Load Model]
+        B2 --> B3[OCR Extraction]
+        B3 --> B4[Extract Company Info<br/>8 Regex Patterns]
+        B4 --> B5[Format Output<br/>JSON/XML]
+        B5 --> B6[10 Fields Output]
+    end
+
+    subgraph Maximum Mode Flow
+        M1[Input Document] --> M2[Load Model]
+        M2 --> M3[OCR Extraction]
+        M3 --> M4[Extract File Metadata]
+        M3 --> M5[Extract Content Structure]
+        M3 --> M6[Extract ALL Entities<br/>50+ Patterns]
+        M3 --> M7[Analyze Document]
+        M4 --> M8[Combine All Data]
+        M5 --> M8
+        M6 --> M8
+        M7 --> M8
+        M8 --> M9[Format Output<br/>JSON/Human]
+        M9 --> M10[100+ Fields Output]
+    end
+
+    style B6 fill:#e1f5fe
+    style M10 fill:#c8e6c9
+                </div>
+
+                <h3>Feature Comparison Table</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Basic Mode</th>
+                            <th>Maximum Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Processing Time</strong></td>
+                            <td>~10 seconds</td>
+                            <td>~15 seconds (+50%)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Points</strong></td>
+                            <td>10 fields</td>
+                            <td>100+ fields (10x)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Categories</strong></td>
+                            <td>2 (Text + Company)</td>
+                            <td>11 (All aspects)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>File Metadata</strong></td>
+                            <td>Minimal</td>
+                            <td>Complete (20+ fields)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Entity Extraction</strong></td>
+                            <td>Company only</td>
+                            <td>All (Company, People, Contacts, etc.)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ALL Instances</strong></td>
+                            <td>First match only</td>
+                            <td>All matches (emails, phones, dates)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Document Analysis</strong></td>
+                            <td>None</td>
+                            <td>Full statistics & classification</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Structure Detection</strong></td>
+                            <td>None</td>
+                            <td>Tables, sections, layout</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Per-Page Info</strong></td>
+                            <td>No</td>
+                            <td>Yes (for PDFs)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Output Size</strong></td>
+                            <td>~5 KB</td>
+                            <td>~150 KB</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Use Case Decision Tree</h3>
+                <div class="mermaid">
+graph TD
+    Start([Need to Extract Info?]) --> Q1{What do you need?}
+
+    Q1 -->|Just text| Basic1[Use Basic Mode]
+    Q1 -->|Company info only| Basic2[Use Basic Mode<br/>--company flag]
+    Q1 -->|Everything possible| Max[Use Maximum Mode]
+
+    Q1 -->|Not sure| Q2{Building database?}
+    Q2 -->|Yes| Max2[Use Maximum Mode<br/>Extract once, use forever]
+    Q2 -->|No| Q3{Need ALL instances?}
+
+    Q3 -->|Yes - all emails,<br/>phones, dates, etc.| Max3[Use Maximum Mode]
+    Q3 -->|No - first match OK| Basic3[Use Basic Mode]
+
+    Max --> Output1[100+ fields<br/>11 categories]
+    Max2 --> Output1
+    Max3 --> Output1
+
+    Basic1 --> Output2[Text only]
+    Basic2 --> Output2[8 company fields]
+    Basic3 --> Output2
+
+    style Start fill:#e3f2fd
+    style Max fill:#c8e6c9
+    style Max2 fill:#c8e6c9
+    style Max3 fill:#c8e6c9
+    style Basic1 fill:#e1f5fe
+    style Basic2 fill:#e1f5fe
+    style Basic3 fill:#e1f5fe
+    style Output1 fill:#a5d6a7
+    style Output2 fill:#b3e5fc
+                </div>
+            </section>
+
+            <!-- PERFORMANCE -->
+            <section id="performance">
+                <h2>⚡ Performance & Optimization</h2>
+
+                <h3>Model Loading Strategy</h3>
+                <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Extractor
+    participant ModelCache
+    participant HuggingFace
+
+    User->>CLI: python3 qwen_extract_max.py doc.pdf
+    CLI->>Extractor: Initialize Extractor
+    Extractor->>ModelCache: Check if model loaded
+
+    alt Model Not Loaded
+        ModelCache->>HuggingFace: Download model (4GB)
+        Note over HuggingFace: First run only<br/>2-5 minutes
+        HuggingFace-->>ModelCache: Model downloaded
+        ModelCache->>ModelCache: Cache in memory
+    else Model Already Loaded
+        Note over ModelCache: Instant<br/>Singleton pattern
+    end
+
+    ModelCache-->>Extractor: Model ready
+    Extractor->>Extractor: Process document
+    Extractor-->>CLI: Return results
+    CLI-->>User: Display output
+                </div>
+
+                <h3>Processing Timeline</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Phase</th>
+                            <th>Time (First Run)</th>
+                            <th>Time (Subsequent)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Model Download</td>
+                            <td>2-5 minutes</td>
+                            <td>0 seconds (cached)</td>
+                        </tr>
+                        <tr>
+                            <td>Model Loading</td>
+                            <td>10-15 seconds</td>
+                            <td>0 seconds (singleton)</td>
+                        </tr>
+                        <tr>
+                            <td>Document Processing</td>
+                            <td>10-15 seconds</td>
+                            <td>10-15 seconds</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td><strong>3-6 minutes</strong></td>
+                            <td><strong>10-15 seconds</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <strong>💡 Performance Tips:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li><strong>Singleton Pattern:</strong> Model loads once, reused for all documents</li>
+                        <li><strong>Lazy Loading:</strong> Model loads only on first extraction</li>
+                        <li><strong>GPU Acceleration:</strong> Use --device cuda for 3x faster processing</li>
+                        <li><strong>Batch Processing:</strong> Process multiple files without reloading model</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- QUICK START -->
+            <section id="quick-start">
+                <h2>🚀 Quick Start Commands</h2>
+
+                <h3>Basic Mode</h3>
+                <div class="code-block">
+# Extract text only
+python3 qwen_extract.py document.pdf
+
+# Extract company information
+python3 qwen_extract.py invoice.pdf --company
+
+# Output as JSON
+python3 qwen_extract.py document.pdf --json
+
+# Output as XML
+python3 qwen_extract.py invoice.pdf --company --xml
+                </div>
+
+                <h3>Maximum Mode</h3>
+                <div class="code-block">
+# See all extraction categories
+python3 qwen_extract_max.py --categories
+
+# Extract everything (human-readable)
+python3 qwen_extract_max.py document.pdf
+
+# Extract everything (complete JSON with 100+ fields)
+python3 qwen_extract_max.py document.pdf --json > full_data.json
+
+# Batch processing
+for file in *.pdf; do
+    python3 qwen_extract_max.py "$file" --json > "${file%.pdf}.json"
+done
+                </div>
+
+                <h3>Extract Specific Information with jq</h3>
+                <div class="code-block">
+# Get company name only
+python3 qwen_extract_max.py invoice.pdf --json | jq -r '.entities.company.name'
+
+# Get all emails
+python3 qwen_extract_max.py document.pdf --json | jq -r '.entities.emails[]'
+
+# Get all amounts
+python3 qwen_extract_max.py invoice.pdf --json | jq '.entities.amounts[].amount'
+
+# Check document type
+python3 qwen_extract_max.py document.pdf --json | jq -r '.analysis.document_type'
+                </div>
+            </section>
+
+            <!-- OUTPUT STRUCTURE -->
+            <section id="output-structure">
+                <h2>📋 Output Structure (Maximum Mode)</h2>
+
+                <div class="mermaid">
+graph TB
+    Root[Complete JSON Output] --> File[file<br/>20+ fields]
+    Root --> Content[content<br/>Text + Structure]
+    Root --> Structure[structure<br/>Pages + Tables + Layout]
+    Root --> Entities[entities<br/>10 entity types]
+    Root --> Analysis[analysis<br/>Statistics + Classification]
+
+    File --> F1[name, path, size]
+    File --> F2[PDF metadata]
+    File --> F3[Image metadata]
+    File --> F4[HTML metadata]
+
+    Content --> C1[text - Full OCR]
+    Content --> C2[raw_text - Original]
+
+    Structure --> S1[pages - Per-page info]
+    Structure --> S2[tables - Detected tables]
+    Structure --> S3[layout - Headers/footers]
+
+    Entities --> E1[company - 6 fields]
+    Entities --> E2[people - Names + titles]
+    Entities --> E3[emails - All emails]
+    Entities --> E4[phones - All phones]
+    Entities --> E5[dates - All dates]
+    Entities --> E6[amounts - All amounts]
+    Entities --> E7[urls - All URLs]
+    Entities --> E8[addresses - All addresses]
+    Entities --> E9[numbers - Integers/decimals/%]
+    Entities --> E10[identifiers - Invoice/Order #]
+
+    Analysis --> A1[statistics - Word/char counts]
+    Analysis --> A2[language - FR/EN]
+    Analysis --> A3[document_type - Invoice/etc]
+
+    style Root fill:#e3f2fd
+    style File fill:#fff3e0
+    style Content fill:#f3e5f5
+    style Structure fill:#e1f5fe
+    style Entities fill:#c8e6c9
+    style Analysis fill:#ffe0b2
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important Notes:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Maximum mode extracts <strong>ALL instances</strong> - not just the first match</li>
+                        <li>Processing time increases by ~50% but data points increase by 10x</li>
+                        <li>JSON output can be 150+ KB for complex documents</li>
+                        <li>Use jq to filter specific fields from the output</li>
+                    </ul>
+                </div>
+            </section>
+
+        </div>
+
+        <footer>
+            <h3>📚 Additional Resources</h3>
+            <p style="margin: 20px 0;">
+                <strong>Documentation Files:</strong><br>
+                README.md | MAXIMUM_EXTRACTION_GUIDE.md | EXTRACTION_COMPARISON.md
+            </p>
+            <p style="margin: 20px 0;">
+                <strong>Tools Available:</strong><br>
+                qwen_extract.py (Basic) | qwen_extract_max.py (Maximum)
+            </p>
+            <p style="margin-top: 20px; opacity: 0.8;">
+                Powered by Qwen2-VL-2B-OCR | Location: /Users/tomahawk/DEV/DEVX/OCR/qwen_ocr_package/
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            sequence: {
+                useMaxWidth: true
+            }
+        });
+    </script>
+</body>
+</html>

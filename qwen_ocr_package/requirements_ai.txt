@@ -1,0 +1,59 @@
+# Dual-AI OCR Extraction System - Dependencies
+# Two-Stage Pipeline: Vision AI (OCR) → Language AI (Organization)
+
+# ============================================================
+# STAGE 1: OCR DEPENDENCIES (Vision Models)
+# ============================================================
+
+# Core OCR
+transformers>=4.36.0
+torch>=2.0.0
+pillow>=10.0.0
+qwen-vl-utils
+
+# PDF Processing
+PyMuPDF>=1.23.0
+pdfplumber>=0.10.0
+
+# ============================================================
+# STAGE 2: ORGANIZATION DEPENDENCIES (Language Models)
+# ============================================================
+
+# API Support
+openai>=1.0.0
+anthropic>=0.8.0
+
+# ============================================================
+# FORMAT CONVERTERS (11 File Types)
+# ============================================================
+
+# Office Documents
+python-docx>=1.0.0        # DOCX
+openpyxl>=3.1.0           # XLSX
+xlrd>=2.0.0               # XLS (legacy Excel)
+
+# Text Formats
+beautifulsoup4>=4.12.0    # HTML/XHTML
+striprtf>=0.0.26          # RTF
+chardet>=5.0.0            # Encoding detection
+
+# ============================================================
+# CORE UTILITIES
+# ============================================================
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Utilities
+python-dateutil>=2.8.0
+regex>=2023.0.0
+
+# Accelerated Inference (Optional)
+# accelerate>=0.25.0      # For faster local model loading
+# bitsandbytes>=0.41.0    # For quantization (8-bit/4-bit)
+
+# ============================================================
+# INSTALLATION
+# ============================================================
+# pip install -r requirements_ai.txt

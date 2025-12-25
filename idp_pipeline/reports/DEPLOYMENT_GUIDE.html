@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline - Server Deployment Guide</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.7; color: #333; max-width: 1200px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); min-height: 100vh; }
+        .container { background: rgba(255,255,255,0.97); border-radius: 16px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        h1 { color: #1a73e8; border-bottom: 4px solid #1a73e8; padding-bottom: 15px; margin-bottom: 30px; font-size: 2.2em; }
+        h2 { color: #34a853; margin-top: 40px; margin-bottom: 20px; font-size: 1.5em; border-left: 4px solid #34a853; padding-left: 15px; }
+        h3 { color: #ea4335; margin-top: 25px; margin-bottom: 15px; font-size: 1.2em; }
+        .card { background: #f8f9fa; border-radius: 12px; padding: 25px; margin: 20px 0; border: 1px solid #e0e0e0; }
+        .success { border-left: 5px solid #34a853; background: linear-gradient(90deg, #e6f4ea 0%, #f8f9fa 100%); }
+        .info { border-left: 5px solid #1a73e8; background: linear-gradient(90deg, #e8f0fe 0%, #f8f9fa 100%); }
+        .warning { border-left: 5px solid #fbbc04; background: linear-gradient(90deg, #fef7e0 0%, #f8f9fa 100%); }
+        .danger { border-left: 5px solid #ea4335; background: linear-gradient(90deg, #fce8e6 0%, #f8f9fa 100%); }
+        code { background: #263238; color: #80cbc4; padding: 3px 8px; border-radius: 4px; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.9em; }
+        pre { background: #263238; color: #eeffff; padding: 20px; border-radius: 10px; overflow-x: auto; margin: 15px 0; font-size: 0.85em; position: relative; }
+        pre code { background: none; padding: 0; color: #eeffff; }
+        pre::before { content: attr(data-lang); position: absolute; top: 8px; right: 12px; font-size: 0.75em; color: #546e7a; text-transform: uppercase; }
+        .command { background: #1a1a2e; color: #00ff88; padding: 15px 20px; border-radius: 8px; font-family: monospace; margin: 10px 0; border-left: 4px solid #00ff88; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 14px; text-align: left; }
+        th { background: linear-gradient(135deg, #1a73e8, #34a853); color: white; }
+        tr:nth-child(even) { background: #f8f9fa; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .badge-required { background: #fce8e6; color: #c5221f; }
+        .badge-optional { background: #e8f0fe; color: #1967d2; }
+        .badge-recommended { background: #e6f4ea; color: #137333; }
+        .step-number { display: inline-flex; align-items: center; justify-content: center; width: 35px; height: 35px; background: linear-gradient(135deg, #1a73e8, #34a853); color: white; border-radius: 50%; font-weight: bold; margin-right: 12px; }
+        .checklist { list-style: none; margin: 15px 0; }
+        .checklist li { padding: 10px 0; border-bottom: 1px solid #eee; }
+        .checklist li::before { content: "☐"; margin-right: 10px; color: #1a73e8; font-size: 1.2em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+        .toc { background: #f0f4f8; padding: 20px 30px; border-radius: 10px; margin: 20px 0; }
+        .toc ul { list-style: none; }
+        .toc li { padding: 8px 0; }
+        .toc a { color: #1a73e8; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        footer { margin-top: 50px; padding-top: 25px; border-top: 2px solid #eee; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 IDP Pipeline - Server Deployment Guide</h1>
+        <p><strong>Version:</strong> 2.2</p>
+        <p><strong>Last Updated:</strong> December 25, 2025</p>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li><a href="#prerequisites">1. Prerequisites</a></li>
+                <li><a href="#quick-start">2. Quick Start (Docker)</a></li>
+                <li><a href="#production">3. Production Deployment</a></li>
+                <li><a href="#gpu">4. GPU Deployment (NVIDIA)</a></li>
+                <li><a href="#scaling">5. Scaling Workers</a></li>
+                <li><a href="#config">6. Configuration Reference</a></li>
+                <li><a href="#manual">7. Manual Installation (No Docker)</a></li>
+                <li><a href="#troubleshooting">8. Troubleshooting</a></li>
+            </ul>
+        </div>
+
+        <!-- PREREQUISITES -->
+        <h2 id="prerequisites"><span class="step-number">1</span>Prerequisites</h2>
+
+        <div class="card info">
+            <h3>Minimum Server Requirements</h3>
+            <table>
+                <tr><th>Component</th><th>Minimum</th><th>Recommended</th><th>Notes</th></tr>
+                <tr><td>CPU</td><td>4 cores</td><td>8+ cores</td><td>More cores = more concurrent workers</td></tr>
+                <tr><td>RAM</td><td>8 GB</td><td>16-32 GB</td><td>Qwen2-VL models need ~12GB RAM</td></tr>
+                <tr><td>Disk</td><td>50 GB</td><td>100+ GB SSD</td><td>AI models cache ~10-20GB</td></tr>
+                <tr><td>GPU (optional)</td><td>4GB VRAM</td><td>8-24GB VRAM</td><td>NVIDIA with CUDA 12.1+</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Required Software</h3>
+            <ul class="checklist">
+                <li><strong>Docker</strong> 24.0+ with Docker Compose v2</li>
+                <li><strong>Git</strong> (to clone the repository)</li>
+                <li><strong>curl</strong> (for health checks)</li>
+            </ul>
+
+            <h4 style="margin-top: 20px;">Install Docker (Ubuntu/Debian)</h4>
+            <div class="command">curl -fsSL https://get.docker.com | sudo sh && sudo usermod -aG docker $USER</div>
+
+            <h4>Install Docker (Amazon Linux / RHEL)</h4>
+            <div class="command">sudo yum install -y docker && sudo systemctl enable --now docker</div>
+        </div>
+
+        <!-- QUICK START -->
+        <h2 id="quick-start"><span class="step-number">2</span>Quick Start (Docker)</h2>
+
+        <div class="card success">
+            <h3>5-Minute Deployment</h3>
+            <p>Get IDP Pipeline running in under 5 minutes:</p>
+
+            <h4>Step 1: Clone the repository</h4>
+            <pre data-lang="bash"><code># Clone to your server
+git clone https://github.com/your-org/idp_pipeline.git
+cd idp_pipeline</code></pre>
+
+            <h4>Step 2: Create persistent storage directories</h4>
+            <pre data-lang="bash"><code># Create directories for models and data
+sudo mkdir -p /data/idp/{models,uploads,output}
+sudo chown -R 1000:1000 /data/idp</code></pre>
+
+            <h4>Step 3: Update docker-compose.yml volumes</h4>
+            <pre data-lang="yaml"><code># Edit docker-compose.yml, replace local paths with:
+volumes:
+  - /data/idp/uploads:/data/uploads
+  - /data/idp/output:/data/output
+  - /data/idp/models:/data/models</code></pre>
+
+            <h4>Step 4: Start the services</h4>
+            <div class="command">docker compose up -d</div>
+
+            <h4>Step 5: Verify deployment</h4>
+            <pre data-lang="bash"><code># Check service status
+docker compose ps
+
+# Check API health
+curl http://localhost:8080/health
+
+# View logs
+docker compose logs -f</code></pre>
+
+            <p style="margin-top: 20px;"><strong>Access the Web UI:</strong> <code>http://YOUR_SERVER_IP:8080</code></p>
+        </div>
+
+        <!-- PRODUCTION -->
+        <h2 id="production"><span class="step-number">3</span>Production Deployment</h2>
+
+        <div class="card warning">
+            <h3>Production Checklist</h3>
+            <ul class="checklist">
+                <li>Configure firewall (allow port 8080 or use reverse proxy)</li>
+                <li>Set up SSL/TLS with nginx or Traefik</li>
+                <li>Configure persistent storage with backups</li>
+                <li>Set up monitoring (Prometheus/Grafana)</li>
+                <li>Configure log rotation</li>
+                <li>Set resource limits for containers</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Nginx Reverse Proxy (SSL)</h3>
+            <pre data-lang="nginx"><code>server {
+    listen 443 ssl http2;
+    server_name idp.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/idp.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/idp.yourdomain.com/privkey.pem;
+
+    client_max_body_size 100M;  # Allow large PDF uploads
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 300s;  # Long timeout for OCR processing
+    }
+}</code></pre>
+        </div>
+
+        <div class="card">
+            <h3>Systemd Service (Auto-restart)</h3>
+            <pre data-lang="ini"><code># /etc/systemd/system/idp-pipeline.service
+[Unit]
+Description=IDP Pipeline OCR Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/idp_pipeline
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+            <div class="command">sudo systemctl enable idp-pipeline && sudo systemctl start idp-pipeline</div>
+        </div>
+
+        <!-- GPU -->
+        <h2 id="gpu"><span class="step-number">4</span>GPU Deployment (NVIDIA)</h2>
+
+        <div class="card info">
+            <h3>Prerequisites for GPU</h3>
+            <ol style="margin-left: 20px; line-height: 2;">
+                <li>NVIDIA GPU with CUDA 12.1+ support</li>
+                <li>NVIDIA Driver 525.60.13+</li>
+                <li>NVIDIA Container Toolkit</li>
+            </ol>
+
+            <h4 style="margin-top: 20px;">Install NVIDIA Container Toolkit</h4>
+            <pre data-lang="bash"><code># Add NVIDIA repo
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# Install toolkit
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker</code></pre>
+
+            <h4>Verify GPU Access</h4>
+            <div class="command">docker run --rm --gpus all nvidia/cuda:12.1-base-ubuntu22.04 nvidia-smi</div>
+        </div>
+
+        <div class="card success">
+            <h3>Start with GPU Support</h3>
+            <div class="command">docker compose -f docker-compose.gpu.yml up -d</div>
+
+            <p style="margin-top: 15px;">GPU workers automatically use larger, more accurate models (Qwen2-VL-7B, GOT-OCR2) for superior OCR quality.</p>
+        </div>
+
+        <!-- SCALING -->
+        <h2 id="scaling"><span class="step-number">5</span>Scaling Workers</h2>
+
+        <div class="card">
+            <h3>Horizontal Scaling</h3>
+            <p>Scale workers based on load:</p>
+
+            <div class="command"># Scale to 4 CPU workers
+docker compose up -d --scale worker=4</div>
+
+            <div class="command"># Scale to 2 GPU workers (if GPUs available)
+docker compose -f docker-compose.gpu.yml up -d --scale worker-gpu=2</div>
+
+            <h4 style="margin-top: 20px;">Recommended Worker Count</h4>
+            <table>
+                <tr><th>Server RAM</th><th>CPU Workers</th><th>GPU Workers (per GPU)</th></tr>
+                <tr><td>16 GB</td><td>1-2</td><td>1</td></tr>
+                <tr><td>32 GB</td><td>2-4</td><td>1-2</td></tr>
+                <tr><td>64 GB</td><td>4-6</td><td>2-3</td></tr>
+                <tr><td>128 GB</td><td>6-8</td><td>3-4</td></tr>
+            </table>
+        </div>
+
+        <div class="card info">
+            <h3>Enable Monitoring Dashboard</h3>
+            <div class="command">docker compose --profile monitoring up -d</div>
+            <p style="margin-top: 10px;">Access Flower dashboard at: <code>http://YOUR_SERVER_IP:5555</code></p>
+        </div>
+
+        <!-- CONFIGURATION -->
+        <h2 id="config"><span class="step-number">6</span>Configuration Reference</h2>
+
+        <div class="card">
+            <h3>Environment Variables</h3>
+            <table>
+                <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+                <tr>
+                    <td><code>IDP_PORT</code></td>
+                    <td>8080</td>
+                    <td>API server port</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_QUEUE_TYPE</code></td>
+                    <td>redis</td>
+                    <td>Queue backend (redis or sqlite)</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_REDIS_URL</code></td>
+                    <td>redis://redis:6379/0</td>
+                    <td>Redis connection URL</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_UPLOAD_DIR</code></td>
+                    <td>/data/uploads</td>
+                    <td>Upload directory path</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_OUTPUT_DIR</code></td>
+                    <td>/data/output</td>
+                    <td>Output JSON directory</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_MODELS_DIR</code></td>
+                    <td>/data/models</td>
+                    <td>HuggingFace models cache</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_VRAM_GB</code></td>
+                    <td>4.0</td>
+                    <td>Available VRAM (affects model selection)</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_PRIORITY</code></td>
+                    <td>balanced</td>
+                    <td>Processing priority (quality/balanced/speed)</td>
+                </tr>
+                <tr>
+                    <td><code>IDP_MEMORY_CLEANUP_DELAY</code></td>
+                    <td>0</td>
+                    <td>Delay after model unload (seconds)</td>
+                </tr>
+                <tr>
+                    <td><code>HF_HOME</code></td>
+                    <td>/data/models</td>
+                    <td>HuggingFace cache directory</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- MANUAL INSTALL -->
+        <h2 id="manual"><span class="step-number">7</span>Manual Installation (No Docker)</h2>
+
+        <div class="card warning">
+            <p><strong>Note:</strong> Docker deployment is strongly recommended. Manual installation requires managing dependencies yourself.</p>
+        </div>
+
+        <div class="card">
+            <h3>Step-by-Step Manual Install</h3>
+
+            <h4>1. Install System Dependencies</h4>
+            <pre data-lang="bash"><code># Ubuntu/Debian
+sudo apt-get update && sudo apt-get install -y \
+    python3.11 python3.11-venv python3-pip \
+    libmagic1 libgl1 libglib2.0-0 redis-server</code></pre>
+
+            <h4>2. Clone and Setup</h4>
+            <pre data-lang="bash"><code>git clone https://github.com/your-org/idp_pipeline.git
+cd idp_pipeline
+
+# Create virtual environment
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt</code></pre>
+
+            <h4>3. Configure Environment</h4>
+            <pre data-lang="bash"><code># Create .env file
+cat > .env << 'EOF'
+IDP_PORT=8080
+IDP_QUEUE_TYPE=redis
+IDP_REDIS_URL=redis://localhost:6379/0
+IDP_UPLOAD_DIR=./uploads
+IDP_OUTPUT_DIR=./output
+IDP_MODELS_DIR=./models
+IDP_VRAM_GB=4.0
+EOF
+
+# Create directories
+mkdir -p uploads output models</code></pre>
+
+            <h4>4. Start Services</h4>
+            <pre data-lang="bash"><code># Terminal 1: Start Redis
+sudo systemctl start redis-server
+
+# Terminal 2: Start API server
+source venv/bin/activate
+python run.py serve --host 0.0.0.0 --port 8080
+
+# Terminal 3: Start worker
+source venv/bin/activate
+python run.py worker</code></pre>
+        </div>
+
+        <!-- TROUBLESHOOTING -->
+        <h2 id="troubleshooting"><span class="step-number">8</span>Troubleshooting</h2>
+
+        <div class="card danger">
+            <h3>Common Issues</h3>
+
+            <h4>❌ Worker crashes with "Out of Memory"</h4>
+            <p><strong>Solution:</strong> Reduce <code>IDP_VRAM_GB</code> to force smaller models, or add more RAM.</p>
+            <div class="command">export IDP_VRAM_GB=2.0  # Use TrOCR (lighter model)</div>
+
+            <h4>❌ Models downloading every restart</h4>
+            <p><strong>Solution:</strong> Ensure <code>/data/models</code> is a persistent volume, not ephemeral.</p>
+
+            <h4>❌ "Connection refused" to Redis</h4>
+            <p><strong>Solution:</strong> Wait for Redis to be healthy before starting workers.</p>
+            <div class="command">docker compose logs redis  # Check Redis status</div>
+
+            <h4>❌ GPU not detected</h4>
+            <p><strong>Solution:</strong> Verify NVIDIA Container Toolkit is installed:</p>
+            <div class="command">docker run --rm --gpus all nvidia/cuda:12.1-base-ubuntu22.04 nvidia-smi</div>
+
+            <h4>❌ Slow first document processing</h4>
+            <p><strong>Expected:</strong> First document downloads AI models (~2-10GB). Subsequent documents are faster.</p>
+        </div>
+
+        <div class="card">
+            <h3>Useful Commands</h3>
+            <table>
+                <tr><th>Command</th><th>Description</th></tr>
+                <tr><td><code>docker compose ps</code></td><td>Check service status</td></tr>
+                <tr><td><code>docker compose logs -f worker</code></td><td>Stream worker logs</td></tr>
+                <tr><td><code>docker compose restart worker</code></td><td>Restart workers</td></tr>
+                <tr><td><code>curl localhost:8080/health</code></td><td>API health check</td></tr>
+                <tr><td><code>curl localhost:8080/api/stats</code></td><td>Queue statistics</td></tr>
+                <tr><td><code>docker compose down -v</code></td><td>Stop and remove volumes (⚠️ data loss)</td></tr>
+            </table>
+        </div>
+
+        <div class="card success" style="margin-top: 40px;">
+            <h2>Summary: Quick Deploy Commands</h2>
+            <pre data-lang="bash"><code># 1. Clone
+git clone https://github.com/your-org/idp_pipeline.git && cd idp_pipeline
+
+# 2. Create storage
+sudo mkdir -p /data/idp/{models,uploads,output} && sudo chown -R 1000:1000 /data/idp
+
+# 3. Start (CPU)
+docker compose up -d
+
+# 4. Start (GPU)
+docker compose -f docker-compose.gpu.yml up -d
+
+# 5. Scale workers
+docker compose up -d --scale worker=4
+
+# 6. View logs
+docker compose logs -f
+
+# 7. Access UI
+echo "Open http://$(hostname -I | awk '{print $1}'):8080"</code></pre>
+        </div>
+
+        <footer>
+            <p>IDP Pipeline Deployment Guide | Version 2.2 | December 2025</p>
+            <p>For support, open an issue on GitHub</p>
+        </footer>
+    </div>
+</body>
+</html>

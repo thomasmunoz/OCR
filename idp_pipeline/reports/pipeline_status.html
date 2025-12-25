@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDP Pipeline Status Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+        .card { background: white; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #1a1a2e; margin-bottom: 10px; }
+        h2 { color: #16213e; border-bottom: 2px solid #e94560; padding-bottom: 8px; }
+        .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .status.running { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: 'Menlo', monospace; }
+        .highlight { background: linear-gradient(120deg, #e94560 0%, #0f3460 100%); color: white; padding: 20px; border-radius: 8px; }
+        .cmd { background: #1a1a2e; color: #00ff00; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Menlo', monospace; }
+        ul { line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <div class="highlight">
+        <h1>IDP Pipeline Status Report</h1>
+        <p>100% On-Premise Intelligent Document Processing</p>
+        <p><small>Generated: December 25, 2025</small></p>
+    </div>
+
+    <div class="card">
+        <h2>Docker Stack Status</h2>
+        <table>
+            <tr><th>Service</th><th>Status</th><th>Port</th><th>Description</th></tr>
+            <tr><td>idp-api</td><td><span class="status running">Healthy</span></td><td>8080</td><td>REST API & Web UI</td></tr>
+            <tr><td>idp-redis</td><td><span class="status running">Healthy</span></td><td>6379 (internal)</td><td>Job Queue</td></tr>
+            <tr><td>idp_pipeline-worker</td><td><span class="status running">Running</span></td><td>-</td><td>OCR Processing Worker</td></tr>
+        </table>
+        <p><strong>Access the Web UI:</strong> <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+    </div>
+
+    <div class="card">
+        <h2>Downloaded OCR Models</h2>
+        <p>Models are persisted at: <code>/Users/tomahawk/DEV/models/</code></p>
+        <table>
+            <tr><th>Model</th><th>Size</th><th>VRAM</th><th>Best For</th><th>Status</th></tr>
+            <tr><td>Qwen2-VL-2B</td><td>~4.1GB</td><td>6GB</td><td>Multi-language docs</td><td><span class="status running">Ready</span></td></tr>
+            <tr><td>Qwen2-VL-7B</td><td>~16GB</td><td>16GB</td><td>Complex documents</td><td><span class="status running">Ready</span></td></tr>
+            <tr><td>TrOCR-Large-Printed</td><td>~2.3GB</td><td>2GB</td><td>English printed text</td><td><span class="status running">Ready</span></td></tr>
+            <tr><td>TrOCR-Large-Handwritten</td><td>~4.2GB</td><td>2GB</td><td>Handwritten text</td><td><span class="status running">Ready</span></td></tr>
+            <tr><td>GOT-OCR 2.0</td><td>~5GB</td><td>8GB</td><td>Tables, complex layouts</td><td><span class="status running">Ready</span></td></tr>
+            <tr><td>Florence-2-Large</td><td>~1.5GB</td><td>6GB</td><td>Fast document understanding</td><td><span class="status running">Ready</span></td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2><span class="status warning">Known Issue</span> Docker Memory Constraints</h2>
+        <p>Docker Desktop is limited to ~7.6GB RAM, which is insufficient for larger models like Qwen2-VL.</p>
+        <h3>Solutions:</h3>
+        <ol>
+            <li><strong>Increase Docker Memory</strong> (Recommended for Docker usage):
+                <ul>
+                    <li>Docker Desktop > Settings > Resources > Memory > 16GB+</li>
+                    <li>Then restart Docker and the containers</li>
+                </ul>
+            </li>
+            <li><strong>Run Locally with MPS</strong> (Best for Apple Silicon):
+                <div class="cmd">
+cd /Users/tomahawk/DEV/DEVX/OCR/idp_pipeline<br>
+pip install -r requirements.txt<br>
+python run.py serve --port 8080
+                </div>
+                <p>This uses Apple Silicon's Metal Performance Shaders for acceleration.</p>
+            </li>
+            <li><strong>Use Current Setup with Smaller Models</strong>:
+                <p>The current config uses TrOCR (2GB) which fits in Docker but is designed for single lines, not full documents.</p>
+            </li>
+        </ol>
+    </div>
+
+    <div class="card">
+        <h2>Configuration Files Modified</h2>
+        <table>
+            <tr><th>File</th><th>Changes</th></tr>
+            <tr><td><code>docker-compose.yml</code></td><td>Local model mount, VRAM limit env var, removed memory limits</td></tr>
+            <tr><td><code>requirements.txt</code></td><td>Added torchvision, timm, tiktoken, einops, verovio</td></tr>
+            <tr><td><code>models/ocr_engine.py</code></td><td>Fixed Florence-2 SDPA compatibility</td></tr>
+            <tr><td><code>models/smart_router.py</code></td><td>Added MODELS_WITH_ENGINES filter</td></tr>
+            <tr><td><code>api/pipeline.py</code></td><td>Added IDP_VRAM_GB environment variable support</td></tr>
+            <tr><td><code>Dockerfile</code></td><td>Disabled healthcheck for worker stage</td></tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Quick Commands</h2>
+        <h3>Start/Stop Pipeline</h3>
+        <div class="cmd">
+# Start<br>
+docker compose up -d<br><br>
+# Stop<br>
+docker compose down<br><br>
+# View logs<br>
+docker compose logs -f worker
+        </div>
+
+        <h3>Test Upload</h3>
+        <div class="cmd">
+curl -X POST http://localhost:8080/api/upload -F "file=@your_document.pdf"
+        </div>
+
+        <h3>Scale Workers</h3>
+        <div class="cmd">
+docker compose up -d --scale worker=3
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Next Steps</h2>
+        <ul>
+            <li>Increase Docker Desktop memory to 16GB for full model support</li>
+            <li>Or run locally: <code>python run.py serve</code> for Apple Silicon acceleration</li>
+            <li>Test with real documents once memory is configured</li>
+            <li>Configure the organization models (currently using TinyLlama for Docker compatibility)</li>
+        </ul>
+    </div>
+
+    <div class="card" style="background: #1a1a2e; color: white;">
+        <h2 style="color: #e94560; border-bottom-color: #e94560;">Architecture</h2>
+        <pre style="color: #00ff00; font-family: monospace; overflow-x: auto;">
++------------------+     +------------------+     +------------------+
+|   Web UI/API     |     |   Redis Queue    |     |   Worker(s)      |
+|   (port 8080)    | --> |   (internal)     | --> |   (scalable)     |
++------------------+     +------------------+     +------------------+
+                                                          |
+                         +------------------+             |
+                         |   Local Models   | <-----------+
+                         |   (/DEV/models)  |
+                         +------------------+
+        </pre>
+    </div>
+</body>
+</html>

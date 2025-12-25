@@ -1,0 +1,80 @@
+# IDP Pipeline - GPU-Enabled Docker Compose
+# Usage:
+#   docker compose -f docker-compose.gpu.yml up -d
+#   docker compose -f docker-compose.gpu.yml up -d --scale worker-gpu=2
+
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: idp-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      target: production
+    container_name: idp-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - IDP_QUEUE_TYPE=redis
+      - IDP_REDIS_URL=redis://redis:6379/0
+    volumes:
+      - uploads:/data/uploads
+      - output:/data/output
+      - models:/data/models
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # GPU Worker with NVIDIA support
+  worker-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gpu-base
+    restart: unless-stopped
+    command: ["python", "run.py", "worker"]
+    environment:
+      - IDP_QUEUE_TYPE=redis
+      - IDP_REDIS_URL=redis://redis:6379/0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - uploads:/data/uploads:ro
+      - output:/data/output
+      - models:/data/models
+    depends_on:
+      - redis
+      - api
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  redis_data:
+  uploads:
+  output:
+  models:
+
+networks:
+  default:
+    name: idp-network
