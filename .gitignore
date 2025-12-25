@@ -47,3 +47,4 @@ logs/
 node_modules/
 contracts/
 reports/
+qwen_ocr_package/
